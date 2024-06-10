@@ -12,33 +12,44 @@
   <label for="endpoint-url">Endpoint URL:</label>
   <input type="text" id="endpoint-url" name="endpoint-url" placeholder="http://publications.europa.eu/webapi/rdf/sparql"
     style="margin-bottom: 20px; width: 100%; padding: 5px; font-size: 1.1em;">
+  <h2>Select PREFIXES:</h2>
+  <div id="prefixes">
+    <input type="checkbox" id="prefix0" checked> <label for="prefix0">PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;</label><br>
+    <input type="checkbox" id="prefix1" checked> <label for="prefix1">PREFIX : &lt;http://data.europa.eu/xsp/cn2022/&gt;</label><br>
+    <input type="checkbox" id="prefix2" checked> <label for="prefix2">PREFIX nace: &lt;http://data.europa.eu/ux2/nace2/&gt;</label><br>
+    <input type="checkbox" id="prefix3" checked> <label for="prefix3">PREFIX fn: &lt;http://www.w3.org/2005/xpath-functions#&gt;</label><br>
+    <input type="checkbox" id="prefix4" checked> <label for="prefix4">PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/&gt;</label><br>
+    <input type="checkbox" id="prefix5" checked> <label for="prefix5">PREFIX gn: &lt;http://www.geonames.org/ontology#&gt;</label><br>
+    <input type="checkbox" id="prefix6" checked> <label for="prefix6">PREFIX grddl: &lt;http://www.w3.org/2003/g/data-view#&gt;</label><br>
+    <input type="checkbox" id="prefix7" checked> <label for="prefix7">PREFIX lemon: &lt;http://lemon-model.net/lemon#&gt;</label><br>
+    <input type="checkbox" id="prefix8" checked> <label for="prefix8">PREFIX lexinfo: &lt;http://www.lexinfo.net/ontology/2.0/lexinfo#&gt;</label><br>
+    <input type="checkbox" id="prefix9" checked> <label for="prefix9">PREFIX lexvo: &lt;http://lexvo.org/ontology#&gt;</label><br>
+    <input type="checkbox" id="prefix10" checked> <label for="prefix10">PREFIX locn: &lt;https://www.w3.org/ns/locn#&gt;</label><br>
+    <input type="checkbox" id="prefix11" checked> <label for="prefix11">PREFIX luc: &lt;http://www.ontotext.com/owlim/lucene#&gt;</label><br>
+    <input type="checkbox" id="prefix12" checked> <label for="prefix12">PREFIX oa: &lt;http://www.w3.org/ns/oa#&gt;</label><br>
+    <input type="checkbox" id="prefix13" checked> <label for="prefix13">PREFIX org: &lt;http://www.w3.org/ns/org#&gt;</label><br>
+    <input type="checkbox" id="prefix14" checked> <label for="prefix14">PREFIX owl: &lt;http://www.w3.org/2002/07/owl#&gt;</label><br>
+    <input type="checkbox" id="prefix15" checked> <label for="prefix15">PREFIX qb: &lt;http://purl.org/linked-data/cube#&gt;</label><br>
+    <input type="checkbox" id="prefix16" checked> <label for="prefix16">PREFIX rdf4j: &lt;http://rdf4j.org/schema/rdf4j#&gt;</label><br>
+    <input type="checkbox" id="prefix17" checked> <label for="prefix17">PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;</label><br>
+    <input type="checkbox" id="prefix18" checked> <label for="prefix18">PREFIX schema: &lt;http://schema.org/&gt;</label><br>
+    <input type="checkbox" id="prefix19" checked> <label for="prefix19">PREFIX sesame: &lt;http://www.openrdf.org/schema/sesame#&gt;</label><br>
+    <input type="checkbox" id="prefix20" checked> <label for="prefix20">PREFIX skos: &lt;http://www.w3.org/2004/02/skos/core#&gt;</label><br>
+    <input type="checkbox" id="prefix21" checked> <label for="prefix21">PREFIX xkos: &lt;http://rdf-vocabulary.ddialliance.org/xkos#&gt;</label><br>
+  </div>
   <textarea id="sparql-query" rows="25" style="width: 100%;" placeholder="Enter SPARQL query"></textarea>
   <button id="execute-query">Execute</button>
   <pre id="results"></pre>
   <script>
-    const testQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-    PREFIX : <http://data.europa.eu/xsp/cn2022/>
-    PREFIX nace: <http://data.europa.eu/ux2/nace2/>
-    PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
-    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-    PREFIX gn: <http://www.geonames.org/ontology#>
-    PREFIX grddl: <http://www.w3.org/2003/g/data-view#>
-    PREFIX lemon: <http://lemon-model.net/lemon#>
-    PREFIX lexinfo: <http://www.lexinfo.net/ontology/2.0/lexinfo#>
-    PREFIX lexvo: <http://lexvo.org/ontology#>
-    PREFIX locn: <https://www.w3.org/ns/locn#>
-    PREFIX luc: <http://www.ontotext.com/owlim/lucene#>
-    PREFIX oa: <http://www.w3.org/ns/oa#>
-    PREFIX org: <http://www.w3.org/ns/org#>
-    PREFIX owl: <http://www.w3.org/2002/07/owl#>
-    PREFIX qb: <http://purl.org/linked-data/cube#>
-    PREFIX rdf4j: <http://rdf4j.org/schema/rdf4j#>
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX schema: <http://schema.org/>
-    PREFIX sesame: <http://www.openrdf.org/schema/sesame#>
-    PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-    PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
-
+    let checkedPrefixes = '';
+    for (let i = 0; i <= 21; i++) {
+      const checkbox = document.getElementById('prefix' + i);
+      if (checkbox.checked) {
+        const label = document.querySelector(`label[for="prefix${i}"]`);
+        checkedPrefixes += label.textContent + '\n';
+      }
+    }
+    const testQuery = `
     SELECT (?S_KEY as ?CN2022_KEY) (?S_CODE as ?CN2022_CODE) (?NAME_Source as ?CN2022_NAME) (?T_KEY as ?CN2021_KEY) (?T_CODE as ?CN2021_CODE) (?NAME_Target as ?CN2021_NAME) 
     WHERE { 
       :CN2022_CN2021 xkos:madeOf ?Associations .
@@ -65,12 +76,22 @@
     `;
 
     const sparqlQueryInput = document.getElementById('sparql-query');
-    sparqlQueryInput.value = testQuery; // Set the value of the textarea to testQuery
     const executeButton = document.getElementById('execute-query');
     const resultsPre = document.getElementById('results');
-
     const endpointInput = document.getElementById('endpoint-url');
 
+    function updateQuery(query) {
+      const checkedPrefixes = Array.from(document.querySelectorAll('#prefixes input[type="checkbox"]:checked'))
+        .map(checkbox => document.querySelector(`label[for="${checkbox.id}"]`).textContent)
+        .join('\n');
+      sparqlQueryInput.value = `${checkedPrefixes}\n${query}`;
+    }
+
+    for (let i = 0; i <= 21; i++) {
+      document.getElementById(`prefix${i}`).addEventListener('change', () => updateQuery(testQuery));
+    }
+
+    updateQuery(testQuery);
 
     executeButton.addEventListener('click', () => {
       let query = sparqlQueryInput.value.trim();
