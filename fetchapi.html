@@ -90,7 +90,7 @@
         resultsPre.textContent = JSON.stringify(queryResults, null, 2);
       } catch (error) {
         console.error('Error executing query:', error);
-        resultsPre.textContent = 'Error: ' + error.message;
+        resultsPre.textContent = 'Error: ' + error.message + '\n' + error.stack + '\n' + error.toString() + '\n' + sparqlEndpoint;
       }
     });
   </script>
