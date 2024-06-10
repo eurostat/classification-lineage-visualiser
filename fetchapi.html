@@ -7,6 +7,9 @@
 </head>
 <body>
   <h1>SPARQL Fetch</h1>
+  <label for="endpoint-url">Endpoint URL:</label>
+  <input type="text" id="endpoint-url" name="endpoint-url" placeholder="http://publications.europa.eu/webapi/rdf/sparql"
+    style="margin-bottom: 20px; width: 100%; padding: 5px; font-size: 1.1em;">
   <textarea id="sparql-query" rows="25" style="width: 100%;" placeholder="Enter SPARQL query"></textarea>
   <button id="execute-query">Execute</button>
   <pre id="results"></pre>
@@ -63,13 +66,17 @@
     sparqlQueryInput.value = testQuery; // Set the value of the textarea to testQuery
     const executeButton = document.getElementById('execute-query');
     const resultsPre = document.getElementById('results');
-    const sparqlEndpoint = 'http://publications.europa.eu/webapi/rdf/sparql';
+
+    const endpointInput = document.getElementById('endpoint-url');
+
 
     executeButton.addEventListener('click', async () => {
       let query = sparqlQueryInput.value.trim();
       if (!query) {
         query = testQuery;
       }
+
+      const sparqlEndpoint = endpointInput.value || endpointInput.placeholder;
 
       try {
         const response = await fetch(sparqlEndpoint, {
@@ -90,7 +97,7 @@
         resultsPre.textContent = JSON.stringify(queryResults, null, 2);
       } catch (error) {
         console.error('Error executing query:', error);
-        resultsPre.textContent = 'Error: ' + error.message + '\n' + error.stack + '\n' + error.toString() + '\n' + sparqlEndpoint;
+        resultsPre.textContent = 'Error: ' + error.message + '\n' + error.stack + '\n' + sparqlEndpoint;
       }
     });
   </script>
