@@ -63,7 +63,7 @@
     sparqlQueryInput.value = testQuery; // Set the value of the textarea to testQuery
     const executeButton = document.getElementById('execute-query');
     const resultsPre = document.getElementById('results');
-    const sparqlEndpoint = 'https://publications.europa.eu/webapi/rdf/sparql';
+    const sparqlEndpoint = 'http://publications.europa.eu/webapi/rdf/sparql';
 
     executeButton.addEventListener('click', async () => {
       let query = sparqlQueryInput.value.trim();
