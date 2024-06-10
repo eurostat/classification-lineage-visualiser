@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SPARQL Fetch</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
 </head>
 <body>
   <h1>SPARQL Fetch</h1>
@@ -70,36 +72,30 @@
     const endpointInput = document.getElementById('endpoint-url');
 
 
-    executeButton.addEventListener('click', async () => {
-      let query = sparqlQueryInput.value.trim();
-      if (!query) {
-        query = testQuery;
-      }
-
-      const sparqlEndpoint = endpointInput.value || endpointInput.placeholder;
-
-      try {
-        const response = await fetch(sparqlEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/sparql-query',
-            'Accept': 'application/sparql-results+json'
-          },
-          body: JSON.stringify(query),
-          mode: 'cors'
-        });
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+      executeButton.addEventListener('click', () => {
+        let query = sparqlQueryInput.value.trim();
+        if (!query) {
+          query = testQuery;
         }
 
-        const queryResults = await response.json();
-        resultsPre.textContent = JSON.stringify(queryResults, null, 2);
-      } catch (error) {
-        console.error('Error executing query:', error);
-        resultsPre.textContent = 'Error: ' + error.message + '\n' + error.stack + '\n' + sparqlEndpoint;
-      }
-    });
+        const sparqlEndpoint = endpointInput.value || endpointInput.placeholder;
+
+        const encodedQuery = encodeURIComponent(query);
+        $.ajax({
+          url: `${sparqlEndpoint}?query=${encodedQuery}`,
+          method: 'GET',
+          headers: {
+            'Accept': 'application/sparql-results+json'
+          },
+          success: function(data) {
+            resultsPre.textContent = JSON.stringify(data, null, 2);
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            console.error('Error executing query:', errorThrown);
+            resultsPre.textContent = 'Error: ' + errorThrown + '\n' + sparqlEndpoint;
+          }
+        });
+      });
   </script>
 </body>
 </html>
