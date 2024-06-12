@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPARQL Fetch</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="queryBuilder.js"></script>
+  
+</head>
+<body>
+  <h1>SPARQL Fetch</h1>
+  <label for="endpoint-url">Endpoint URL:</label>
+  <input type="text" id="endpoint-url" name="endpoint-url" placeholder="http://publications.europa.eu/webapi/rdf/sparql"
+    style="margin-bottom: 20px; width: 100%; padding: 5px; font-size: 1.1em;">
+  <textarea id="sparql-query" rows="20" style="width: 100%;" placeholder="Enter SPARQL query"></textarea>
+  <button id="execute-query">Execute</button>
+  <pre id="results"></pre>
+  <script>
+    const executeButton = document.getElementById('execute-query');
+    const resultsPre = document.getElementById('results');
+
+    const endpointInput = document.getElementById('endpoint-url');
+
+
+    executeButton.addEventListener('click', () => {
+
+      const query = buildQuery(2020, '?S_CODE', "^2804.*70.*");
+
+      document.getElementById('sparql-query').value = query;
+
+      const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
+
+      const encodedQuery = encodeURIComponent(query);
+      const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
+      $.ajax({
+        url: `${corsAnywhereUrl}${sparqlEndpoint}?query=${encodedQuery}`,
+        method: 'GET',
+        headers: {
+          'Accept': 'application/sparql-results+json'
+        },
+        success: function(data) {
+          resultsPre.textContent = JSON.stringify(data, null, 2);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          console.error('Error executing query:', errorThrown);
+          resultsPre.textContent = 'Error: ' + errorThrown + '\n' + sparqlEndpoint;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
