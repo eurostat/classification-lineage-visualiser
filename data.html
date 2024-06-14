@@ -6,26 +6,58 @@
   <title>SPARQL Fetch</title>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="queryBuilder.js"></script>
+  <script src="targets.js"></script>
   
 </head>
 <body>
   <h1>SPARQL Fetch</h1>
-  <label for="endpoint-url">Endpoint URL:</label>
-  <input type="text" id="endpoint-url" name="endpoint-url" placeholder="http://publications.europa.eu/webapi/rdf/sparql"
-    style="margin-bottom: 20px; width: 100%; padding: 5px; font-size: 1.1em;">
-  <textarea id="sparql-query" rows="20" style="width: 100%;" placeholder="Enter SPARQL query"></textarea>
-  <button id="execute-query">Execute</button>
+  <label for="req-code">CN code:</label>
+  <input type="text" id="req-code" name="req-code" placeholder="^2804.*70.*"
+    style="margin-bottom: 20px; width: 150px; padding: 5px; font-size: 1.1em;">
+  <label for="req-year">CN year:</label>
+  <input type="text" id="req-year" name="req-year" placeholder="2020"
+    style="margin-bottom: 20px; width: 52px; padding: 5px; font-size: 1.1em;">
+  <button id="execute-query" style="margin: 20px;">Execute</button>
+  <div id="timestamp"></div>
+  <textarea id="sparql-query" rows="20" style="width: 80%;" placeholder="Enter SPARQL query"></textarea>
   <pre id="results"></pre>
+  <script>
+    fetch('http://localhost:5500/Query-9.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log(data);
+        data.results.bindings.forEach(binding => {
+          console.log(
+            binding.source.value.split('/').pop(),
+            binding.target.value.split('/').pop(),
+            binding.year.value);
+        });
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+
+  </script>
   <script>
     const executeButton = document.getElementById('execute-query');
     const resultsPre = document.getElementById('results');
 
-    const endpointInput = document.getElementById('endpoint-url');
+    const reqCode = document.getElementById('req-code');
+    const code = reqCode.value || reqCode.placeholder;
+    const reqYear = document.getElementById('req-year');
 
 
     executeButton.addEventListener('click', () => {
+      const timestamp = new Date();
+      $('#timestamp').text('Query executed at: ' + timestamp);
 
-      const query = buildQuery(2020, '?S_CODE', "^2804.*70.*");
+      const year = parseInt(reqYear.value) || parseInt(reqYear.placeholder);
+      const query = buildQuery(year, '?S_CODE', code);
 
       document.getElementById('sparql-query').value = query;
 
@@ -34,11 +66,13 @@
       const encodedQuery = encodeURIComponent(query);
       const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
       $.ajax({
-        url: `${corsAnywhereUrl}${sparqlEndpoint}?query=${encodedQuery}`,
-        method: 'GET',
+        url: `${corsAnywhereUrl}${sparqlEndpoint}`,
+        method: 'POST',
         headers: {
-          'Accept': 'application/sparql-results+json'
+          'Accept': 'application/sparql-results+json',
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
+        data: `query=${encodedQuery}`,
         success: function(data) {
           resultsPre.textContent = JSON.stringify(data, null, 2);
         },
@@ -51,4 +85,3 @@
   </script>
 </body>
 </html>
-
