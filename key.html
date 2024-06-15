@@ -4,7 +4,7 @@
   <script src="https://d3js.org/d3.v6.min.js"></script>
 </head>
 <body>
- <script>
+  <script>
   // Fetch the data
   fetch('http://localhost:5500/Query-9.json')
     .then(response => {
@@ -17,12 +17,12 @@
       const bindings = data.results.bindings;
       const startId = '321511000080'; // Replace with your starting ID
       const startYear = 2018; // Replace with the starting year for your given ID
-      console.log(bindings);
 
       const processData = (bindings, startId, startYear) => {
         const nodes = [];
         const edges = [];
         const idToNodes = {};
+        const processed = new Set(); // Set to keep track of processed nodes
         const queue = [{ id: startId, year: startYear }];
 
         // Function to create a node
@@ -49,10 +49,17 @@
         // Processing loop for descendants and ancestors
         while (queue.length > 0) {
           const { id, year } = queue.shift();
+          const currentNodeKey = `${id}-${year}`;
+
+          if (processed.has(currentNodeKey)) {
+            continue; // Skip if this node has already been processed
+          }
+          processed.add(currentNodeKey);
 
           // Find descendants
           bindings.forEach(record => {
-            if (record.source.value === id) {
+            console.log(record.source.value, (record.source.value.endsWith(id))? ' rhi':'')
+            if (record.source.value.endsWith(id)) {
               const targetId = record.target.value;
               const recordYear = parseInt(record.year.value);
 
@@ -67,7 +74,8 @@
 
           // Find ancestors
           bindings.forEach(record => {
-            if (record.target.value === id) {
+            console.log(record.target.value, (record.target.value.endsWith(id))? ' rhi':'')
+            if (record.target.value.endsWith(id)) {
               const sourceId = record.source.value;
               const recordYear = parseInt(record.year.value);
 
