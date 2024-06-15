@@ -4,7 +4,7 @@
   <script src="https://d3js.org/d3.v6.min.js"></script>
 </head>
 <body>
-  <script>
+ <script>
   // Fetch the data
   fetch('http://localhost:5500/Query-9.json')
     .then(response => {
@@ -15,7 +15,8 @@
     })
     .then(data => {
       const bindings = data.results.bindings;
-      const startId = '321511000080'; // Replace with your starting ID
+      const startId =  '321511000080'; // Replace with your starting ID
+      // const startId = '846229100080';
       const startYear = 2018; // Replace with the starting year for your given ID
 
       const processData = (bindings, startId, startYear) => {
@@ -24,6 +25,26 @@
         const idToNodes = {};
         const processed = new Set(); // Set to keep track of processed nodes
         const queue = [{ id: startId, year: startYear }];
+
+        // Map source IDs and target IDs to their records for quick lookup
+        const sourceMap = {};
+        const targetMap = {};
+
+        // Function to extract ID from URI
+        const extractId = (uri) => uri.split('/').pop();
+
+        bindings.forEach(record => {
+          const sourceId = extractId(record.source.value);
+          const targetId = extractId(record.target.value);
+          const year = parseInt(record.year.value);
+
+          if (!sourceMap[sourceId]) sourceMap[sourceId] = [];
+          if (!targetMap[targetId]) targetMap[targetId] = [];
+
+          sourceMap[sourceId].push({ targetId, year });
+          targetMap[targetId].push({ sourceId, year });
+        });
+
 
         // Function to create a node
         const createNode = (id, year) => {
@@ -57,36 +78,28 @@
           processed.add(currentNodeKey);
 
           // Find descendants
-          bindings.forEach(record => {
-            console.log(record.source.value, (record.source.value.endsWith(id))? ' rhi':'')
-            if (record.source.value.endsWith(id)) {
-              const targetId = record.target.value;
-              const recordYear = parseInt(record.year.value);
-
+          if (sourceMap[id]) {
+            sourceMap[id].forEach(({ targetId, year }) => {
               if (!idToNodes[`${id}-${year}`]) createNode(id, year);
-              if (!idToNodes[`${targetId}-${recordYear + 1}`]) createNode(targetId, recordYear + 1);
+              if (!idToNodes[`${targetId}-${year + 1}`]) createNode(targetId, year + 1);
 
-              edges.push({ source: `${id}-${year}`, target: `${targetId}-${recordYear + 1}` });
+              edges.push({ source: `${id}-${year}`, target: `${targetId}-${year + 1}` });
 
-              queue.push({ id: targetId, year: recordYear + 1 });
-            }
-          });
+              queue.push({ id: targetId, year: year + 1 });
+            });
+          }
 
           // Find ancestors
-          bindings.forEach(record => {
-            console.log(record.target.value, (record.target.value.endsWith(id))? ' rhi':'')
-            if (record.target.value.endsWith(id)) {
-              const sourceId = record.source.value;
-              const recordYear = parseInt(record.year.value);
+          if (targetMap[id]) {
+            targetMap[id].forEach(({ sourceId, year }) => {
+              if (!idToNodes[`${sourceId}-${year}`]) createNode(sourceId, year);
+              if (!idToNodes[`${id}-${year + 1}`]) createNode(id, year + 1);
 
-              if (!idToNodes[`${sourceId}-${recordYear}`]) createNode(sourceId, recordYear);
-              if (!idToNodes[`${id}-${recordYear + 1}`]) createNode(id, recordYear + 1);
+              edges.push({ source: `${sourceId}-${year}`, target: `${id}-${year + 1}` });
 
-              edges.push({ source: `${sourceId}-${recordYear}`, target: `${id}-${recordYear + 1}` });
-
-              queue.push({ id: sourceId, year: recordYear });
-            }
-          });
+              queue.push({ id: sourceId, year: year });
+            });
+          }
         }
 
         // Ensure continuity of nodes
@@ -113,10 +126,7 @@
       console.log(result.nodes);
       console.log(result.edges);
     })
-    .catch(error => {
-      console.error('There has been a problem with your fetch operation:', error);
-    });
+    // .catch(error => { console.error('There has been a problem with your fetch operation:', error); });
 </script>
- 
 </body>
 </html>
