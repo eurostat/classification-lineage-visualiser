@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+ <script>
+  // Fetch the data
+  fetch('http://localhost:5500/Query-9.json')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      const bindings = data.results.bindings;
+      const startId = '321511000080'; // Replace with your starting ID
+      const startYear = 2018; // Replace with the starting year for your given ID
+      console.log(bindings);
+
+      const processData = (bindings, startId, startYear) => {
+        const nodes = [];
+        const edges = [];
+        const idToNodes = {};
+        const queue = [{ id: startId, year: startYear }];
+
+        // Function to create a node
+        const createNode = (id, year) => {
+          const node = {
+            id: `${id}-${year}`,
+            label: id,
+            year: year,
+            title: 'some title', // Replace with actual title if available
+            x: calculateXPosition(year),
+            y: calculateYPosition(id)
+          };
+          nodes.push(node);
+          idToNodes[node.id] = node;
+          return node;
+        };
+
+        // Function to calculate X position based on year
+        const calculateXPosition = (year) => year * 100;
+
+        // Function to calculate Y position based on ID
+        const calculateYPosition = (id) => (parseInt(id) % 300) + 50;
+
+        // Processing loop for descendants and ancestors
+        while (queue.length > 0) {
+          const { id, year } = queue.shift();
+
+          // Find descendants
+          bindings.forEach(record => {
+            if (record.source.value === id) {
+              const targetId = record.target.value;
+              const recordYear = parseInt(record.year.value);
+
+              if (!idToNodes[`${id}-${year}`]) createNode(id, year);
+              if (!idToNodes[`${targetId}-${recordYear + 1}`]) createNode(targetId, recordYear + 1);
+
+              edges.push({ source: `${id}-${year}`, target: `${targetId}-${recordYear + 1}` });
+
+              queue.push({ id: targetId, year: recordYear + 1 });
+            }
+          });
+
+          // Find ancestors
+          bindings.forEach(record => {
+            if (record.target.value === id) {
+              const sourceId = record.source.value;
+              const recordYear = parseInt(record.year.value);
+
+              if (!idToNodes[`${sourceId}-${recordYear}`]) createNode(sourceId, recordYear);
+              if (!idToNodes[`${id}-${recordYear + 1}`]) createNode(id, recordYear + 1);
+
+              edges.push({ source: `${sourceId}-${recordYear}`, target: `${id}-${recordYear + 1}` });
+
+              queue.push({ id: sourceId, year: recordYear });
+            }
+          });
+        }
+
+        // Ensure continuity of nodes
+        const allYears = Array.from(new Set(nodes.map(node => node.year)));
+        const minYear = Math.min(...allYears);
+        const maxYear = Math.max(...allYears);
+
+        for (let year = minYear; year <= maxYear; year++) {
+          if (!idToNodes[`${startId}-${year}`]) {
+            createNode(startId, year);
+            if (year > minYear) {
+              edges.push({
+                source: `${startId}-${year - 1}`,
+                target: `${startId}-${year}`
+              });
+            }
+          }
+        }
+
+        return { nodes, edges };
+      };
+
+      const result = processData(bindings, startId, startYear);
+      console.log(result.nodes);
+      console.log(result.edges);
+    })
+    .catch(error => {
+      console.error('There has been a problem with your fetch operation:', error);
+    });
+</script>
+ 
+</body>
+</html>
