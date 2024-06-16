@@ -17,7 +17,7 @@
       const bindings = data.results.bindings;
       const startId =  '321511000080'; // Replace with your starting ID
       // const startId = '846229100080';
-      const startYear = 2018; // Replace with the starting year for your given ID
+      const startYear = 2022; // Replace with the starting year for your given ID
 
       const processData = (bindings, startId, startYear) => {
         const nodes = [];
@@ -52,25 +52,17 @@
             id: `${id}-${year}`,
             label: id,
             year: year,
-            title: 'some title', // Replace with actual title if available
-            x: calculateXPosition(year),
-            y: calculateYPosition(id)
           };
           nodes.push(node);
           idToNodes[node.id] = node;
           return node;
         };
 
-        // Function to calculate X position based on year
-        const calculateXPosition = (year) => year * 100;
-
-        // Function to calculate Y position based on ID
-        const calculateYPosition = (id) => (parseInt(id) % 300) + 50;
-
         // Processing loop for descendants and ancestors
         while (queue.length > 0) {
           const { id, year } = queue.shift();
           const currentNodeKey = `${id}-${year}`;
+          console.log(currentNodeKey);
 
           if (processed.has(currentNodeKey)) {
             continue; // Skip if this node has already been processed
