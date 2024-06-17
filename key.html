@@ -15,8 +15,8 @@
     })
     .then(data => {
       const bindings = data.results.bindings;
-      const startId = '321511000080'; // Replace with your starting ID
-      // const startId = '846229100080';
+      // const startId = '321511000080'; // Replace with your starting ID
+      const startId = '846229100080';
       const startYear = 2017; // Replace with the starting year for your given ID
 
       // Function to extract ID from URI
@@ -74,12 +74,20 @@
 
       // Function to ensure continuity of nodes
       const ensureContinuity = (startId, nodes, idToNodes, edges) => {
-        const allYears = Array.from(new Set(nodes.map(node => node.year)));
-        const minYear = Math.min(...allYears);
-        const maxYear = Math.max(...allYears);
+        const minYear = 2017; // Math.min(...allYears);
+        const maxYear = 2023; // Math.max(...allYears);
 
         for (let year = minYear; year <= maxYear; year++) {
           if (!idToNodes[`${startId}-${year}`]) {
+            // Create a new node
+            const node = {
+              id: `${startId}-${year}`,
+              label: startId,
+              year: year,
+            };
+            nodes.push(node);
+            idToNodes[node.id] = node;
+
             if (year > minYear) {
               edges.push({
                 source: `${startId}-${year}`,
@@ -130,7 +138,7 @@
           processChildren(id, year, targetMap, idToNodes, edges, queue, processedEdges, nodes);
         }
 
-        ensureContinuity(startId, nodes, idToNodes, edges);
+        // ensureContinuity(startId, nodes, idToNodes, edges);
 
         return { nodes, edges };
       };
