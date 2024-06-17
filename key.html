@@ -34,51 +34,56 @@
         return node;
       };
 
-      // Function to process descendants
-      const processParents = (id, year, sourceMap, idToNodes, edges, queue) => {
+      // Function to process parents (descendants)
+      const processParents = (id, year, sourceMap, idToNodes, edges, queue, processedEdges, nodes) => {
         if (sourceMap[id]) {
           sourceMap[id].forEach(({ targetId, year }) => {
-            if (!idToNodes[`${id}-${year}`]) createNode(id, year, nodes, idToNodes);
-            if (!idToNodes[`${targetId}-${year + 1}`]) createNode(targetId, year + 1, nodes, idToNodes);
+            const edgeKey = `${id}-${year}->${targetId}-${year + 1}`;
+            if (!processedEdges.has(edgeKey)) {
+              if (!idToNodes[`${id}-${year}`]) createNode(id, year, nodes, idToNodes);
+              if (!idToNodes[`${targetId}-${year + 1}`]) createNode(targetId, year + 1, nodes, idToNodes);
 
-            edges.push({ source: `${id}-${year}`, target: `${targetId}-${year + 1}` });
+              edges.push({ source: `${id}-${year}`, target: `${targetId}-${year + 1}` });
+              processedEdges.add(edgeKey);
             console.log("Parents", id.substring(4,8) , targetId.substring(4,8), year)
 
-            queue.push({ id: targetId, year: year + 1 });
+              queue.push({ id: targetId, year: year + 1 });
+            }
           });
         }
       };
 
-      // Function to process ancestors
-      const processChildren = (id, year, targetMap, idToNodes, edges, queue, nodes) => {
+      // Function to process children (ancestors)
+      const processChildren = (id, year, targetMap, idToNodes, edges, queue, processedEdges, nodes) => {
         if (targetMap[id]) {
           targetMap[id].forEach(({ sourceId, year }) => {
-            if (!idToNodes[`${sourceId}-${year}`]) createNode(sourceId, year, nodes, idToNodes);
-            if (!idToNodes[`${id}-${year + 1}`]) createNode(id, year + 1, nodes, idToNodes);
+            const edgeKey = `${sourceId}-${year}->${id}-${year + 1}`;
+            if (!processedEdges.has(edgeKey)) {
+              if (!idToNodes[`${sourceId}-${year}`]) createNode(sourceId, year, nodes, idToNodes);
+              if (!idToNodes[`${id}-${year + 1}`]) createNode(id, year + 1, nodes, idToNodes);
 
-            edges.push({ source: `${sourceId}-${year}`, target: `${id}-${year + 1}` });
+              edges.push({ source: `${sourceId}-${year}`, target: `${id}-${year + 1}` });
+              processedEdges.add(edgeKey);
             console.log("children", id.substring(4,8) ,  sourceId.substring(4,8), year)
 
-            queue.push({ id: sourceId, year: year });
+              queue.push({ id: sourceId, year: year });
+            }
           });
         }
       };
 
       // Function to ensure continuity of nodes
       const ensureContinuity = (startId, nodes, idToNodes, edges) => {
-        console.log(nodes);
         const allYears = Array.from(new Set(nodes.map(node => node.year)));
-        console.log(allYears);
         const minYear = Math.min(...allYears);
         const maxYear = Math.max(...allYears);
 
         for (let year = minYear; year <= maxYear; year++) {
           if (!idToNodes[`${startId}-${year}`]) {
-            createNode(startId, year, nodes, idToNodes);
             if (year > minYear) {
               edges.push({
-                source: `${startId}-${year - 1}`,
-                target: `${startId}-${year}`
+                source: `${startId}-${year}`,
+                target: `${startId}-${year+1}`
               });
             }
           }
@@ -90,7 +95,8 @@
         const nodes = [];
         const edges = [];
         const idToNodes = {};
-        const processed = new Set(); // Set to keep track of processed nodes
+        const processedNodes = new Set(); // Set to keep track of processed nodes
+        const processedEdges = new Set(); // Set to keep track of processed edges
         const queue = [{ id: startId, year: startYear }];
 
         // Map source IDs and target IDs to their records for quick lookup
@@ -109,26 +115,22 @@
           targetMap[targetId].push({ sourceId, year });
         });
 
-        // console.log(Object.keys(sourceMap).length);
-        // console.log(Object.keys(targetMap).length);
-        // console.log(sourceMap);
-
         // Processing loop for descendants and ancestors
         while (queue.length > 0) {
           const { id, year } = queue.shift();
           const currentNodeKey = `${id}-${year}`;
           console.log("queue", id.substring(4,8), year);
 
-          if (processed.has(currentNodeKey)) {
+          if (processedNodes.has(currentNodeKey)) {
             continue; // Skip if this node has already been processed
           }
-          processed.add(currentNodeKey);
+          processedNodes.add(currentNodeKey);
 
-          processParents(id, year, sourceMap, idToNodes, edges, queue, nodes);
-          processChildren(id, year, targetMap, idToNodes, edges, queue, nodes);
+          processParents(id, year, sourceMap, idToNodes, edges, queue, processedEdges, nodes);
+          processChildren(id, year, targetMap, idToNodes, edges, queue, processedEdges, nodes);
         }
 
-        // ensureContinuity(startId, nodes, idToNodes, edges);
+        ensureContinuity(startId, nodes, idToNodes, edges);
 
         return { nodes, edges };
       };
