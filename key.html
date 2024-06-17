@@ -4,7 +4,7 @@
   <script src="https://d3js.org/d3.v6.min.js"></script>
 </head>
 <body>
- <script>
+<script>
   // Fetch the data
   fetch('http://localhost:5500/Query-9.json')
     .then(response => {
@@ -15,10 +15,77 @@
     })
     .then(data => {
       const bindings = data.results.bindings;
-      const startId =  '321511000080'; // Replace with your starting ID
+      const startId = '321511000080'; // Replace with your starting ID
       // const startId = '846229100080';
-      const startYear = 2022; // Replace with the starting year for your given ID
+      const startYear = 2017; // Replace with the starting year for your given ID
 
+      // Function to extract ID from URI
+      const extractId = (uri) => uri.split('/').pop();
+
+      // Function to create a node
+      const createNode = (id, year, nodes, idToNodes) => {
+        const node = {
+          id: `${id}-${year}`,
+          label: id,
+          year: year,
+        };
+        nodes.push(node);
+        idToNodes[node.id] = node;
+        return node;
+      };
+
+      // Function to process descendants
+      const processParents = (id, year, sourceMap, idToNodes, edges, queue) => {
+        if (sourceMap[id]) {
+          sourceMap[id].forEach(({ targetId, year }) => {
+            if (!idToNodes[`${id}-${year}`]) createNode(id, year, nodes, idToNodes);
+            if (!idToNodes[`${targetId}-${year + 1}`]) createNode(targetId, year + 1, nodes, idToNodes);
+
+            edges.push({ source: `${id}-${year}`, target: `${targetId}-${year + 1}` });
+            console.log("Parents", id.substring(4,8) , targetId.substring(4,8), year)
+
+            queue.push({ id: targetId, year: year + 1 });
+          });
+        }
+      };
+
+      // Function to process ancestors
+      const processChildren = (id, year, targetMap, idToNodes, edges, queue, nodes) => {
+        if (targetMap[id]) {
+          targetMap[id].forEach(({ sourceId, year }) => {
+            if (!idToNodes[`${sourceId}-${year}`]) createNode(sourceId, year, nodes, idToNodes);
+            if (!idToNodes[`${id}-${year + 1}`]) createNode(id, year + 1, nodes, idToNodes);
+
+            edges.push({ source: `${sourceId}-${year}`, target: `${id}-${year + 1}` });
+            console.log("children", id.substring(4,8) ,  sourceId.substring(4,8), year)
+
+            queue.push({ id: sourceId, year: year });
+          });
+        }
+      };
+
+      // Function to ensure continuity of nodes
+      const ensureContinuity = (startId, nodes, idToNodes, edges) => {
+        console.log(nodes);
+        const allYears = Array.from(new Set(nodes.map(node => node.year)));
+        console.log(allYears);
+        const minYear = Math.min(...allYears);
+        const maxYear = Math.max(...allYears);
+
+        for (let year = minYear; year <= maxYear; year++) {
+          if (!idToNodes[`${startId}-${year}`]) {
+            createNode(startId, year, nodes, idToNodes);
+            if (year > minYear) {
+              edges.push({
+                source: `${startId}-${year - 1}`,
+                target: `${startId}-${year}`
+              });
+            }
+          }
+        }
+      };
+
+      // Main function to process data
       const processData = (bindings, startId, startYear) => {
         const nodes = [];
         const edges = [];
@@ -29,9 +96,6 @@
         // Map source IDs and target IDs to their records for quick lookup
         const sourceMap = {};
         const targetMap = {};
-
-        // Function to extract ID from URI
-        const extractId = (uri) => uri.split('/').pop();
 
         bindings.forEach(record => {
           const sourceId = extractId(record.source.value);
@@ -45,71 +109,26 @@
           targetMap[targetId].push({ sourceId, year });
         });
 
-
-        // Function to create a node
-        const createNode = (id, year) => {
-          const node = {
-            id: `${id}-${year}`,
-            label: id,
-            year: year,
-          };
-          nodes.push(node);
-          idToNodes[node.id] = node;
-          return node;
-        };
+        // console.log(Object.keys(sourceMap).length);
+        // console.log(Object.keys(targetMap).length);
+        // console.log(sourceMap);
 
         // Processing loop for descendants and ancestors
         while (queue.length > 0) {
           const { id, year } = queue.shift();
           const currentNodeKey = `${id}-${year}`;
-          console.log(currentNodeKey);
+          console.log("queue", id.substring(4,8), year);
 
           if (processed.has(currentNodeKey)) {
             continue; // Skip if this node has already been processed
           }
           processed.add(currentNodeKey);
 
-          // Find descendants
-          if (sourceMap[id]) {
-            sourceMap[id].forEach(({ targetId, year }) => {
-              if (!idToNodes[`${id}-${year}`]) createNode(id, year);
-              if (!idToNodes[`${targetId}-${year + 1}`]) createNode(targetId, year + 1);
-
-              edges.push({ source: `${id}-${year}`, target: `${targetId}-${year + 1}` });
-
-              queue.push({ id: targetId, year: year + 1 });
-            });
-          }
-
-          // Find ancestors
-          if (targetMap[id]) {
-            targetMap[id].forEach(({ sourceId, year }) => {
-              if (!idToNodes[`${sourceId}-${year}`]) createNode(sourceId, year);
-              if (!idToNodes[`${id}-${year + 1}`]) createNode(id, year + 1);
-
-              edges.push({ source: `${sourceId}-${year}`, target: `${id}-${year + 1}` });
-
-              queue.push({ id: sourceId, year: year });
-            });
-          }
+          processParents(id, year, sourceMap, idToNodes, edges, queue, nodes);
+          processChildren(id, year, targetMap, idToNodes, edges, queue, nodes);
         }
 
-        // Ensure continuity of nodes
-        const allYears = Array.from(new Set(nodes.map(node => node.year)));
-        const minYear = Math.min(...allYears);
-        const maxYear = Math.max(...allYears);
-
-        for (let year = minYear; year <= maxYear; year++) {
-          if (!idToNodes[`${startId}-${year}`]) {
-            createNode(startId, year);
-            if (year > minYear) {
-              edges.push({
-                source: `${startId}-${year - 1}`,
-                target: `${startId}-${year}`
-              });
-            }
-          }
-        }
+        // ensureContinuity(startId, nodes, idToNodes, edges);
 
         return { nodes, edges };
       };
@@ -118,7 +137,7 @@
       console.log(result.nodes);
       console.log(result.edges);
     })
-    // .catch(error => { console.error('There has been a problem with your fetch operation:', error); });
+  // .catch(error => { console.error('There has been a problem with your fetch operation:', error); });
 </script>
 </body>
 </html>
