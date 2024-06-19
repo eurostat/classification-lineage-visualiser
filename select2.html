@@ -12,19 +12,28 @@
 </head>
 
 <body>
+
   <header>
+    <select name="category" id="category">
+      <option value="" disabled selected>Select Category</option>
+      <option value="cn">Combined Nomenclature</option>
+      <option value="prodcom">Community Production</option>
+    </select>
+    </select>
     <select id="year" style="width: 300px;">
     </select>
     <select id="code" style="width: 300px;">
       <option></option>
     </select>
   </header>
+
   <main>
     <div id="spinner" style="display: none;">
       <div class="loader"></div>
     </div>
 
     <script src="select2.js" type="module"></script>
+
   </main>
 
 

@@ -9,7 +9,7 @@ export function populateYearOptions(elementId, startYear, endYear) {
   placeholderOption.value = '';
   placeholderOption.disabled = true;
   placeholderOption.selected = true;
-  placeholderOption.textContent = '-';
+  placeholderOption.textContent = 'Select a year';
   selectElement.appendChild(placeholderOption);
 
   // Add options for each year from startYear to endYear
@@ -20,11 +20,12 @@ export function populateYearOptions(elementId, startYear, endYear) {
     selectElement.appendChild(option);
   }
 }
-export function getDataAndLoadSelect2(domain, year) {
+
+export function getDataAndLoadSelect2(category, year) {
   const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
   const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
 
-  const query = queryBuilderForId(domain, year);
+  const query = queryBuilderForId(category, year);
 
   $('#spinner').show();
 
@@ -61,22 +62,23 @@ export function getDataAndLoadSelect2(domain, year) {
   });
 }
 
-function queryBuilderForId(domain,year) {
+function queryBuilderForId(category,year) {
+  const path = { cn: "xsp", prodcom: "qw1" }[category]; 
   return `
-            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-            PREFIX dc: <http://purl.org/dc/elements/1.1/>
-            PREFIX dct: <http://purl.org/dc/terms/>
-            PREFIX : <http://data.europa.eu/xsp/${domain}${year}/>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+    PREFIX dc: <http://purl.org/dc/elements/1.1/>
+    PREFIX dct: <http://purl.org/dc/terms/>
+    PREFIX : <http://data.europa.eu/${path}/${category}${year}/>
 
-            SELECT ?ID ?CODE WHERE { 
-                ?s a skos:Concept;
-                   skos:inScheme :${domain}${year};
-                   dc:identifier ?ID;
-                   skos:notation ?CODE.
-                FILTER ( datatype(?CODE) = xsd:string )
-            }
-        `;
+    SELECT ?ID ?CODE WHERE { 
+        ?s a skos:Concept;
+            skos:inScheme :${category}${year};
+            dc:identifier ?ID;
+            skos:notation ?CODE.
+        FILTER ( datatype(?CODE) = xsd:string )
+    }
+`;
 }
 
