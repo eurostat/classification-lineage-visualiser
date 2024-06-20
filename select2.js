@@ -4,7 +4,7 @@ $("#categories")
 	.select2({
 		placeholder: "Select an option",
 		allowClear: true,
-		minimumResultsForSearch: Infinity,
+		// minimumResultsForSearch: Infinity,
 		data: [
 			{ id: "cn", text: "Combined Nomenclature" },
 			{ id: "prodcom", text: "Community Production" },
@@ -28,7 +28,7 @@ $("#versions")
 		const category = $("#categories").val();
 		getDataAndLoadSelect2(e.target.id, category, path);
 	}).on("select2:clear", function (e) {
-		$("#concepts").empty()
+		$("#concepts").empty().prop("disabled", true);
 	});
 
 $("#concepts")

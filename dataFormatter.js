@@ -1,16 +1,26 @@
 // File: dataFormatter.js
 function formatDataCodes(data) {
-  return data.results.bindings.map(item => ({
+  const formattedData = data.results.bindings.map(item => ({
     id: item.ID.value,
     text: `[${item.CODE.value}] ${item.LABEL.value}`,
   }));
+
+  // Prepend an empty element to the array
+  formattedData.unshift({ id: "", text: "" });
+
+  return formattedData;
 }
 
 function formatDataVersions(data) {
-	return data.results.bindings.map((item) => ({
-		id: item.URI.value,
-		text: item.NOTATION.value,
-	}));
+  const formattedData = data.results.bindings.map(item => ({
+    id: item.URI.value,
+    text: item.NOTATION.value,
+  }));
+
+  // Prepend an empty element to the array
+  formattedData.unshift({ id: "", text: "" });
+
+  return formattedData;
 }
 
 export function formatData(callerId, data) {
