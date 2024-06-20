@@ -1,17 +1,39 @@
-import { populateYearOptions } from "./select2Data.js";
 import { getDataAndLoadSelect2 } from "./getDataAndLoadSelect2.js";
-document.getElementById("category").addEventListener("change", (event) => {
-	const category = event.target.value;
-	if (1) {
-		const sYear = { cn: 2017, prodcom: 2021 }[category];
-		const eYear = { cn: 2024, prodcom: 2024 }[category];
-		populateYearOptions("versions", sYear, eYear, category);
-		return;
-	}
-	populateVersionOptions("versions", category);
-});
-document.getElementById("versions").addEventListener("change", (event) => {
-	const year = event.target.value;
-	const category = document.getElementById("category").value;
-	getDataAndLoadSelect2(category, year);
-});
+
+$("#categories")
+	.select2({
+		placeholder: "Select an option",
+		allowClear: true,
+		minimumResultsForSearch: Infinity,
+		data: [
+			{ id: "cn", text: "Combined Nomenclature" },
+			{ id: "prodcom", text: "Community Production" },
+		],
+	})
+	.on("select2:select", function (e) {
+		const category = e.params.data.id;
+		getDataAndLoadSelect2(e.target.id, category, category);
+		$("#versions").empty()
+		$("#concepts").empty().prop("disabled", true);
+	})
+	.on("select2:clear", function (e) {
+		$("#versions").empty().prop("disabled", true);
+		$("#concepts").empty().prop("disabled", true);
+	});
+
+$("#versions")
+	.select2()
+	.on("select2:select", function (e) {
+		const path = e.params.data.id;
+		const category = $("#categories").val();
+		getDataAndLoadSelect2(e.target.id, category, path);
+	}).on("select2:clear", function (e) {
+		$("#concepts").empty()
+	});
+
+$("#concepts")
+	.select2()
+	.on("select2:select", function (e) {
+		const path = e.params.data.id;
+		const category = $("#categories").val();
+	});

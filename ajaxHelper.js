@@ -9,3 +9,12 @@ export function makeAjaxRequest(url, method, headers, data, onSuccess, onError) 
     error: onError
   });
 }
+// Instead of making an AJAX request, read a local JSON file
+export function fakeAjaxRequest(url, method, headers, data, onSuccess, onError, callerId) {
+  const path = { versions: 'data/cn2019.json', categories: 'data/versions.json' }[callerId];
+  $.getJSON(path, function(data) {
+    onSuccess(data);
+  }).fail(function(jqxhr, textStatus, error) {
+    onError(jqxhr, textStatus, error);
+  });
+}

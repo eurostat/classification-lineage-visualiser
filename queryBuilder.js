@@ -1,10 +1,9 @@
 function queryBuilderForCodeId(category, path) {
-  console.log(category, path);
   const regex = /(\d{4})(?=\/?>$)/;
   const match = regex.exec(path);
   const year = match ? match[1] : null;
   const inScheme = category+year
-	console.log(inScheme,category);
+
 	return `
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

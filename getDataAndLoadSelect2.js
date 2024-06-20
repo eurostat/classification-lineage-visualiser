@@ -1,14 +1,14 @@
 // File: getDataAndLoadSelect2.js
 import { queryBuilder } from './queryBuilder.js';
-import { makeAjaxRequest } from './ajaxHelper.js';
+import { fakeAjaxRequest as makeAjaxRequest } from './ajaxHelper.js';
 import { formatData } from './dataFormatter.js';
 import { initializeSelect2 } from './select2Helper.js';
 
-export function getDataAndLoadSelect2(elementId, category, year) {
+export function getDataAndLoadSelect2(callerId, category, path) {
   const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
   const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
 
-  const query = queryBuilder(elementId, category, year);
+  const query = queryBuilder(category, path);
   console.log('Query:', query);
 
   $('#spinner').show();
@@ -22,13 +22,14 @@ export function getDataAndLoadSelect2(elementId, category, year) {
     },
     { query: query },
     function (data) {
-      const formattedData = formatData(elementId, data);
-      initializeSelect2(elementId, formattedData);
+      const formattedData = formatData(callerId, data);
+      initializeSelect2(callerId, formattedData);
       $('#spinner').hide();
     },
     function (jqXHR, textStatus, errorThrown) {
       console.error('Error executing query:', errorThrown);
       $('#spinner').hide();
-    }
+    },
+    callerId
   );
 }

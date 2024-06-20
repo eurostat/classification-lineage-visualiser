@@ -2,7 +2,7 @@
 function formatDataCodes(data) {
   return data.results.bindings.map(item => ({
     id: item.ID.value,
-    text: item.CODE.value + item.LABEL.value,
+    text: `[${item.CODE.value}] ${item.LABEL.value}`,
   }));
 }
 
@@ -13,10 +13,10 @@ function formatDataVersions(data) {
 	}));
 }
 
-export function formatData(elementId, data) {
-  if (elementId === 'codes') {
+export function formatData(callerId, data) {
+  if (callerId === 'versions') {
     return formatDataCodes(data);
-  } else if (elementId === 'versions') {
+  } else if (callerId === 'categories') {
     return formatDataVersions(data);
   }
 }

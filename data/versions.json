@@ -1,0 +1,65 @@
+{
+  "head": {
+    "link": [],
+    "vars": [
+      "URI",
+      "NOTATION"
+    ]
+  },
+  "results": {
+    "distinct": false,
+    "ordered": true,
+    "bindings": [
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/qw1/prodcom2024/prodcom2024"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "PRODCOM 2024"
+        }
+      },
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/qw1/prodcom2023/prodcom2023"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "PRODCOM 2023"
+        }
+      },
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/qw1/prodcom2022/prodcom2022"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "PRODCOM 2022"
+        }
+      },
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/qw1/prodcom2021/prodcom2021"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "PRODCOM 2021"
+        }
+      },
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/qw1/prodcom2019/prodcom2019"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "PRODCOM 2019-2020"
+        }
+      }
+    ]
+  }
+}
