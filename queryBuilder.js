@@ -43,10 +43,30 @@ function queryBuilderForVersion(category) {
 `;
 }
 
+function queryBuilderForGraphs(uri){
+  return`
+    PREFIX ns2: <http://rdf-vocabulary.ddialliance.org/xkos#>
+    PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+    PREFIX dc: <http://purl.org/dc/elements/1.1/>
+    prefix : <${uri}>
+
+    SELECT ?CODE ?ID ?LABEL
+    WHERE {
+      : ns2:targetConcept ?targetConcept .
+      ?targetConcept skos:notation ?CODE;
+                    dc:identifier ?ID;
+                    skos:altLabel ?LABEL.
+      FILTER(DATATYPE(?CODE) = xsd:string && LANG(?LABEL) = "en")
+    }
+  `
+}
+
 export function queryBuilder(callerId, category, uri, version) {
 	if (callerId === "versions") {
 		return queryBuilderForCodeId(category, uri, version);
 	} else if (callerId === "categories") {
 		return queryBuilderForVersion(category);
-	}
+	} else if (callerId === "concepts") {
+    return queryBuilderForGraphs(uri);
+  }
 }
