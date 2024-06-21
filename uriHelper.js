@@ -20,7 +20,8 @@ export function createConceptURL(baseUri, category) {
 
 	return urlParts.toString();
 }
-
+// Modify the year in the URL - increment or decrement by 1.
+// Set increment variable to false to decrement the year.
 export function modifyYearInURL(baseUri, category, increment = true) {
   const regex = new RegExp(`(${category})(\\d{4})(?=\\D|$)`, 'gi');
   return baseUri.replace(regex, (_, p1, p2) => `${p1}${parseInt(p2) + (increment ? 1 : -1)}`);
