@@ -13,8 +13,11 @@ function formatDataCodes(data) {
 
 function formatDataVersions(data) {
   const formattedData = data.results.bindings.map(item => ({
-    id: item.URI.value,
+    id: item.VERSION.value,
     text: item.NOTATION.value,
+    data: {
+      uri: item.URI.value,
+    },
   }));
 
   // Prepend an empty element to the array

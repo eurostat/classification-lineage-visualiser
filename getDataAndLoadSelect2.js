@@ -4,11 +4,11 @@ import { fakeAjaxRequest as makeAjaxRequest } from './ajaxHelper.js';
 import { formatData } from './dataFormatter.js';
 import { initializeSelect2 } from './select2Helper.js';
 
-export function getDataAndLoadSelect2(callerId, category, path) {
+export function getDataAndLoadSelect2(callerId, category, uri, version) {
   const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
   const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
 
-  const query = queryBuilder(category, path);
+  const query = queryBuilder(callerId, category, uri, version);
   console.log('Query:', query);
 
   $('#spinner').show();
