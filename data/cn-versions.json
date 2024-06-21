@@ -1,0 +1,128 @@
+{
+  "head": {
+    "link": [],
+    "vars": [
+      "URI",
+      "NOTATION",
+      "VERSION"
+    ]
+  },
+  "results": {
+    "distinct": false,
+    "ordered": true,
+    "bindings": [
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/xsp/cn2024/cn2024"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "CN 2024"
+        },
+        "VERSION": {
+          "type": "literal",
+          "value": "2024"
+        }
+      },
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/xsp/cn2023/cn2023"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "CN 2023"
+        },
+        "VERSION": {
+          "type": "literal",
+          "value": "2023"
+        }
+      },
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/xsp/cn2022/cn2022"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "CN 2022"
+        },
+        "VERSION": {
+          "type": "literal",
+          "value": "2022"
+        }
+      },
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/xsp/cn2021/cn2021"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "CN 2021"
+        },
+        "VERSION": {
+          "type": "literal",
+          "value": "2021"
+        }
+      },
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/xsp/cn2020/cn2020"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "CN 2020"
+        },
+        "VERSION": {
+          "type": "literal",
+          "value": "2020"
+        }
+      },
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/xsp/cn2019/cn2019"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "CN 2019"
+        },
+        "VERSION": {
+          "type": "literal",
+          "value": "2019"
+        }
+      },
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/xsp/cn2018/cn2018"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "CN 2018"
+        },
+        "VERSION": {
+          "type": "literal",
+          "value": "2018"
+        }
+      },
+      {
+        "URI": {
+          "type": "uri",
+          "value": "http://data.europa.eu/xsp/cn2017/cn2017"
+        },
+        "NOTATION": {
+          "type": "literal",
+          "value": "CN 2017"
+        },
+        "VERSION": {
+          "type": "literal",
+          "value": "2017"
+        }
+      }
+    ]
+  }
+}
