@@ -5,7 +5,7 @@ $("#categories")
 	.select2({
 		placeholder: "Select an option",
 		allowClear: true,
-		// minimumResultsForSearch: Infinity,
+		minimumResultsForSearch: Infinity,
 		data: [
 			{ id: "cn", text: "Combined Nomenclature" },
 			{ id: "prodcom", text: "Community Production" },
