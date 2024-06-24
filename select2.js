@@ -37,8 +37,8 @@ $("#concepts")
 	.select2()
 	.on("select2:select", function (e) {
 		const conceptId = e.params.data.id;
-		const version = $("#versions").val();
+		const baseYear = $("#versions").val();
 		const category = $("#categories").val();
 		const uri = $("#versions").select2("data")[0].data.uri;
-		getDataForGraphs(e.target.id, conceptId, version, category, uri);
+		getDataForGraphs(e.target.id, conceptId, baseYear, category, uri);
 	});
