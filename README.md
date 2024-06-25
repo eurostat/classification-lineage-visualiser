@@ -1,5 +1,5 @@
-## Classification Lineage Visualiser
-A front-end application to visualize the lineage of classification items over time.
+## Classification Lineage Visualiser Prototype
+A front-end application to visualize the lineage of classification items over time. This prototype is built using HTML, CSS, and JavaScript. The user select form is populated with data from an RDF database using SPARQL queries. The application allows users to select a concept and view its evolution over different years.
 
 ## Features
 ### Dynamic Search with Typeahead
@@ -12,3 +12,34 @@ A front-end application to visualize the lineage of classification items over ti
 - Based on the version selected by the user, the application sets a reference year.
 - The application first looks ahead by incrementing the reference year and querying data for each subsequent year.
 - Then, it looks behind by decrementing the reference year (subtracting 1 each time) and querying data for each previous year.
+
+## Recent Development Overview
+
+**Classification Lineage Visualizer Prototype:**
+
+* I've finalized the design of the initial prototype for the classification lineage visualizer. This includes functionality to:
+    * Visualize concept changes over time.
+    * Select concept code using a dropdown menu.
+
+**SPARQL Query Development:**
+
+* I'm currently developing SPARQL queries to retrieve data for the visualizer. This involves creating:
+    * Dropdowns populated with a version (year).
+    * Dropdowns populated with a concepts list.
+    * Tracking mechanisms for concept changes and continuity.
+
+**Progress on Specific Tasks:**
+
+* Cascading dropdowns with a typeahead for concept selection are complete and functional. 
+* Data retrieval from the RDF database used in dropdowns is operational.
+* The application is now able to query data for different years to show the evolution of concepts.
+
+**Development Environment Setup:**
+
+* The development environment is configured, including a proxy to address CORS errors.
+
+**Version Control and Documentation:**
+
+* All development is tracked and managed using Git.
+* Continuous documentation is being maintained throughout the development process.
+
