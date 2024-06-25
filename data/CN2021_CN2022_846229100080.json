@@ -1,0 +1,121 @@
+{
+  "head": {
+    "link": [],
+    "vars": [
+      "CODE",
+      "ID",
+      "LABEL"
+    ]
+  },
+  "results": {
+    "distinct": false,
+    "ordered": true,
+    "bindings": [
+      {
+        "CODE": {
+          "type": "literal",
+          "value": "8462 90 90"
+        },
+        "ID": {
+          "type": "literal",
+          "value": "846290900080"
+        },
+        "LABEL": {
+          "type": "literal",
+          "xml:lang": "en",
+          "value": "-- Other"
+        }
+      },
+      {
+        "CODE": {
+          "type": "literal",
+          "value": "8462 69 90"
+        },
+        "ID": {
+          "type": "literal",
+          "value": "846269900080"
+        },
+        "LABEL": {
+          "type": "literal",
+          "xml:lang": "en",
+          "value": "--- Other"
+        }
+      },
+      {
+        "CODE": {
+          "type": "literal",
+          "value": "8462 22 90"
+        },
+        "ID": {
+          "type": "literal",
+          "value": "846222900080"
+        },
+        "LABEL": {
+          "type": "literal",
+          "xml:lang": "en",
+          "value": "--- Other"
+        }
+      },
+      {
+        "CODE": {
+          "type": "literal",
+          "value": "8462 29 90"
+        },
+        "ID": {
+          "type": "literal",
+          "value": "846229900080"
+        },
+        "LABEL": {
+          "type": "literal",
+          "xml:lang": "en",
+          "value": "--- Other"
+        }
+      },
+      {
+        "CODE": {
+          "type": "literal",
+          "value": "8462 61 90"
+        },
+        "ID": {
+          "type": "literal",
+          "value": "846261900080"
+        },
+        "LABEL": {
+          "type": "literal",
+          "xml:lang": "en",
+          "value": "--- Other"
+        }
+      },
+      {
+        "CODE": {
+          "type": "literal",
+          "value": "8462 62 90"
+        },
+        "ID": {
+          "type": "literal",
+          "value": "846262900080"
+        },
+        "LABEL": {
+          "type": "literal",
+          "xml:lang": "en",
+          "value": "--- Other"
+        }
+      },
+      {
+        "CODE": {
+          "type": "literal",
+          "value": "8462 63 90"
+        },
+        "ID": {
+          "type": "literal",
+          "value": "846263900080"
+        },
+        "LABEL": {
+          "type": "literal",
+          "xml:lang": "en",
+          "value": "--- Other"
+        }
+      }
+    ]
+  }
+}
