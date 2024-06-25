@@ -61,9 +61,9 @@ function queryBuilderForGraphs(uri){
   `
 }
 
-export function queryBuilder(callerId, category, uri, version) {
+export function queryBuilder(callerId, category, uri, year) {
 	if (callerId === "versions") {
-		return queryBuilderForCodeId(category, uri, version);
+		return queryBuilderForCodeId(category, uri, year);
 	} else if (callerId === "categories") {
 		return queryBuilderForVersion(category);
 	} else if (callerId === "concepts") {
