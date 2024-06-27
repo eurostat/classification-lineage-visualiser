@@ -1,5 +1,5 @@
 import { getDataAndLoadSelect2 } from "./getDataAndLoadSelect2.js";
-import { createConceptURL } from "./uriHelper.js";
+import { getYearComparisonURI } from "./uriHelper.js";
 import { composeGraphData } from "./dataForGraphs.js";
 
 $("#categories")
@@ -41,7 +41,7 @@ $("#concepts").select2()
 		const baseYear = Number($("#versions").val());
 		const category = $("#categories").val();
 		const uri = $("#versions").select2("data")[0].data.uri;
-		const baseUri = createConceptURL(uri, category);
+		const baseUri = getYearComparisonURI(uri, category, baseYear);
 		composeGraphData(callerId, category, baseUri, baseYear, conceptId);
 	});
 
@@ -50,14 +50,14 @@ $("#concepts").select2()
 	$("#submit-button").on("click", function () {
 		// const callerId = $("#concepts").attr('id');
 		// const category = $("#categories").val();
-		// const uri = $("#versions").select2("data")[0].data.uri;
-		// const baseUri = createConceptURL(uri, category);
 		// const baseYear = Number($("#versions").val());
+		// const uri = $("#versions").select2("data")[0].data.uri;
+		// const baseUri = getYearComparisonURI(uri, category, baseYear);
 		// const conceptId = $("#concepts").select2('data')[0].id;
 
 		// console.log("Button clicked:", callerId, category, baseUri, baseYear, conceptId);
 		// composeGraphData(callerId, category, baseUri, baseYear, conceptId);
-		composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2021/CN2021_CN2022", 2022, "846229100080");
+		composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2021/CN2021_CN2022", 2021, "846229100080");
 
 
 	});
