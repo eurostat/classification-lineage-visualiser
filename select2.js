@@ -34,8 +34,7 @@ $("#versions")
 		$("#concepts").empty().prop("disabled", true);
 	});
 
-$("#concepts")
-	.select2()
+$("#concepts").select2()
 	.on("select2:select", function (e) {
 		const callerId = e.target.id;
 		const conceptId = e.params.data.id;
@@ -44,4 +43,21 @@ $("#concepts")
 		const uri = $("#versions").select2("data")[0].data.uri;
 		const baseUri = createConceptURL(uri, category);
 		composeGraphData(callerId, category, baseUri, baseYear, conceptId);
+	});
+
+
+	// Replace the select event handler with a click event handler for the button
+	$("#submit-button").on("click", function () {
+		// const callerId = $("#concepts").attr('id');
+		// const category = $("#categories").val();
+		// const uri = $("#versions").select2("data")[0].data.uri;
+		// const baseUri = createConceptURL(uri, category);
+		// const baseYear = Number($("#versions").val());
+		// const conceptId = $("#concepts").select2('data')[0].id;
+
+		// console.log("Button clicked:", callerId, category, baseUri, baseYear, conceptId);
+		// composeGraphData(callerId, category, baseUri, baseYear, conceptId);
+		composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2021/CN2021_CN2022", 2022, "846229100080");
+
+
 	});
