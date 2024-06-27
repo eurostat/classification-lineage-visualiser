@@ -1,138 +1,126 @@
-import { createConceptURL, modifyYearInURL } from "./uriHelper.js";
+import { modifyYearInURL } from "./uriHelper.js";
 import { queryBuilder } from "./queryBuilder.js";
-import { makeAjaxRequest } from "./ajaxHelper.js";
+import { makeAjaxRequest as makeAjaxRequest } from "./ajaxHelper.js";
 
+const maxYear = 2024;
+let callerId = '';
+let category = "";
 
-export function getDataForGraphs(callerId, conceptId, baseYear, category, uri) {
-  console.log("getDataForGraphs called with id:", conceptId, "version:", baseYear, "category:", category, "uri:", uri); 
-  try {
-    const conceptRDFUrl = createConceptURL(uri, category) + '_' + '846229100080';
-    // const conceptRDFUrl = createConceptURL(uri, category) + '_' + conceptId;
+export function composeGraphData(id, cat, baseUri, baseYear, conceptId) {
+	callerId = id;
+	category = cat;
 
-    getDataAndLoad(callerId, category, conceptRDFUrl, baseYear, '846229100080');
-    // getDataAndLoad(callerId, category, conceptRDFUrl, baseYear, conceptId);
-
-  } catch (error) {
-    console.error("Error:", error.message);
-  }
+	renderGraphData(baseUri, baseYear, conceptId);
 }
 
-function getDataAndLoad(callerId, category, uri, baseYear, conceptId) {
-  console.log("getDataAndLoad called with id:", callerId, "category:", category, "uri:", uri, "version:", baseYear, "conceptId:", conceptId)
+function renderGraphData(baseUri, baseYear, conceptId) {
+	console.log("Rendering graph data for:", conceptId, "in year:", baseYear, baseUri);
+	try {
+		getDataAndLoad(baseUri, baseYear, conceptId);
+	} catch (error) {
+		console.error("Error:", error.message);
+	}
+}
+
+function getDataAndLoad(baseUri, baseYear, conceptId) {
   const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
   const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
+	const conceptRDFUri = baseUri + '_' + conceptId;
 
-  const query = queryBuilder(callerId, category, uri, baseYear);
-  console.log('Query:', query);
-
-  // throw new Error("getDataAndLoad not implemented yet");
-
+  const query = queryBuilder(callerId, category, conceptRDFUri, baseYear);
+	console.log("Query:", query);
 
   $('#spinner').show();
 
   makeAjaxRequest(
-		`${corsAnywhereUrl}${sparqlEndpoint}`,
-		"POST",
-		{
-			Accept: "application/sparql-results+json",
-			"Content-Type": "application/x-www-form-urlencoded",
-		},
-		{ query: query },
-		function (data) {
-			formatDataGraphs(data, baseYear, conceptId); // This is the callback function that will process the data
-		},
-		function (jqXHR, textStatus, errorThrown) {
-			console.error("Error executing query:", errorThrown);
-			$("#spinner").hide();
-		},
-		callerId
-	);
+    `${corsAnywhereUrl}${sparqlEndpoint}`,
+    "POST",
+    {
+      Accept: "application/sparql-results+json",
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    { query: query },
+    function (data) {
+			formatDataGraphs(data, baseUri, baseYear, conceptId);
+      $("#spinner").hide();
+    },
+    function (jqXHR, textStatus, errorThrown) {
+      console.error("Error executing query:", errorThrown);
+      $("#spinner").hide();
+    },
+    callerId
+  );
 }
 
-export function formatDataGraphs(data, startYear, conceptId) {
-  console.log("formatDataGraphs called with id:", conceptId, "year:", startYear, data);
-	const bindings = data.results.bindings;
+// This is the callback function that will process the data
+export function formatDataGraphs(data, baseUri, baseYear, conceptId) {
+  const bindings = data.results.bindings;
 
-	// Function to create a node
-	const createNode = (id, year, nodes, idToNodes) => {
-		const node = {
-			id: `${id}-${year}`,
-			label: id,
-			year: year,
-		};
-		nodes.push(node);
-		idToNodes[node.id] = node;
-		return node;
-	};
+  const result = createGraphDataFromBindings(bindings, conceptId, baseYear);
 
-	// Function to process children (ancestors)
-	const processChildren = ( id, year, targetMap, idToNodes, edges, queue, processedEdges, nodes) => {
-		if (targetMap[id]) {
-			targetMap[id].forEach(({ sourceId, year }) => {
-				const edgeKey = `${sourceId}-${year}->${id}-${year + 1}`;
-				if (!processedEdges.has(edgeKey)) {
-					if (!idToNodes[`${sourceId}-${year}`])
-						createNode(sourceId, year, nodes, idToNodes);
-					if (!idToNodes[`${id}-${year + 1}`])
-						createNode(id, year + 1, nodes, idToNodes);
+	console.log("nodes:", result.nodes);
+	console.log("edges:", result.edges);
+	console.log("targetIds:", result.targetIds);
+	 
+  // Recursive call for each targetId if the targetYear is less than or equal to maxYear
+  result.targetIds.forEach(target => {
+    if (target.targetYear <= maxYear) {
+			renderGraphData(modifyYearInURL(baseUri, true), target.targetYear, target.targetId);
+    }
+  });
+}
 
-					edges.push({
-						source: `${sourceId}-${year}`,
-						target: `${id}-${year + 1}`,
-					});
-					processedEdges.add(edgeKey);
-					console.log(
-						"children",
-						id.substring(4, 8),
-						sourceId.substring(4, 8),
-						year
-					);
+function createGraphDataFromBindings(bindings, conceptId, baseYear) {
+  const nodes = [];
+  const edges = [];
+  const processedNodes = new Set();
+  const processedEdges = new Set();
 
-					queue.push({ id: sourceId, year: year });
-				}
-			});
-		}
-	};
+  const nodeKey = `${conceptId}-${baseYear}`;
 
-	// Main function to process data
-	const processData = (bindings, conceptId, startYear) => {
-    console.log("processData called with id:", conceptId, "year:", startYear, bindings);
-		const nodes = [];
-		const edges = [];
-		const idToNodes = {};
-		const processedNodes = new Set(); // Set to keep track of processed nodes
-		const processedEdges = new Set(); // Set to keep track of processed edges
-		const queue = [{ id: conceptId, year: startYear }];
+  if (!processedNodes.has(nodeKey)) {
+    createNode(conceptId, baseYear, nodes);
+    processedNodes.add(nodeKey);
+  }
 
-		// Map source IDs and target IDs to their records for quick lookup
-		const targetMap = {};
+  // Map source IDs and target IDs to their records for quick lookup
+  const targetMap = {};
+  const targetYear = baseYear + 1;
+  const targetIds = [];
 
-		bindings.forEach((record) => {
-			const targetId = record.ID.value;
-      console.log("targetId", targetId, record);
-			if (!targetMap[targetId]) targetMap[targetId] = [];
-			targetMap[targetId].push({ conceptId, startYear});
-		});
+  bindings.forEach((record) => {
+    const targetId = record.ID.value;
+    if (!targetMap[targetId]) targetMap[targetId] = [];
+    targetMap[targetId].push({ conceptId, startYear: baseYear });
 
-		// Processing loop for descendants and ancestors
-		while (queue.length > 0) {
-			const { id, year } = queue.shift();
-			const currentNodeKey = `${id}-${year}`;
-			console.log("queue", id.substring(4, 8), year);
+    const nodeKey = `${targetId}-${targetYear}`;
 
-			if (processedNodes.has(currentNodeKey)) {
-				continue; // Skip if this node has already been processed
-			}
-			processedNodes.add(currentNodeKey);
+    if (!processedNodes.has(nodeKey)) {
+      createNode(targetId, targetYear, nodes);
+      processedNodes.add(nodeKey);
+    }
 
-			// processParents( id, year, sourceMap, idToNodes, edges, queue, processedEdges, nodes);
-			processChildren( id, year, targetMap, idToNodes, edges, queue, processedEdges, nodes );
-		}
+    const edgeKey = `${conceptId}-${baseYear}->${targetId}-${targetYear}`;
 
-		return { nodes, edges };
-	};
+    if (!processedEdges.has(edgeKey)) {
+      edges.push({
+        source: `${conceptId}-${baseYear}`,
+        target: `${targetId}-${targetYear}`,
+      });
+      processedEdges.add(edgeKey);
+    }
 
-	const result = processData(bindings, conceptId, startYear);
-	console.log(result.nodes);
-	console.log(result.edges);
+    targetIds.push({ targetId, targetYear });
+  });
+
+  return { nodes, edges, targetIds };
+}
+
+function createNode(id, year, nodes) {
+  const node = {
+    id: `${id}-${year}`,
+    label: id,
+    year: year,
+  };
+  nodes.push(node);
 }

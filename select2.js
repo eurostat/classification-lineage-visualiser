@@ -1,5 +1,6 @@
 import { getDataAndLoadSelect2 } from "./getDataAndLoadSelect2.js";
-import { getDataForGraphs } from "./dataForGraphs.js";
+import { createConceptURL } from "./uriHelper.js";
+import { composeGraphData } from "./dataForGraphs.js";
 
 $("#categories")
 	.select2({
@@ -36,9 +37,11 @@ $("#versions")
 $("#concepts")
 	.select2()
 	.on("select2:select", function (e) {
+		const callerId = e.target.id;
 		const conceptId = e.params.data.id;
-		const baseYear = $("#versions").val();
+		const baseYear = Number($("#versions").val());
 		const category = $("#categories").val();
 		const uri = $("#versions").select2("data")[0].data.uri;
-		getDataForGraphs(e.target.id, conceptId, baseYear, category, uri);
+		const baseUri = createConceptURL(uri, category);
+		composeGraphData(callerId, category, baseUri, baseYear, conceptId);
 	});
