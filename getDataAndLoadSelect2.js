@@ -9,7 +9,6 @@ export function getDataAndLoadSelect2(callerId, category, uri, version) {
   const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
 
   const query = queryBuilder(callerId, category, uri, version);
-  console.log('Query:', query);
 
   $('#spinner').show();
 
