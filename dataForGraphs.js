@@ -8,102 +8,116 @@ let baseUri = "";
 let callerId = "";
 let category = "";
 let baseConceptId = "";
+let globalNodes = [];
+let globalEdges = [];
+let processedNodes = new Set();
+let processedEdges = new Set();
 
-export function composeGraphData(id, cat, iUri, iYear, conceptId) {
-	callerId = id;
-	category = cat;
+export async function composeGraphData(id, cat, iUri, iYear, conceptId) {
+  callerId = id;
+  category = cat;
   baseYear = iYear;
   baseUri = iUri;
   baseConceptId = conceptId;
 
-	renderGraphData(iUri, iYear, conceptId);
+  globalNodes = [];
+  globalEdges = [];
+  processedNodes = new Set();
+  processedEdges = new Set();
+
+  await renderGraphData(iUri, iYear, conceptId);
 }
 
-function renderGraphData(iUri, iYear, conceptId) {
-	console.log("Rendering graph data for:", conceptId, "in year:", iYear, iUri);
-	try {
-		getDataAndLoad(iUri, iYear, conceptId);
-	} catch (error) {
-		console.error("Error:", error.message);
-	}
+async function renderGraphData(iUri, iYear, conceptId) {
+  console.log("Rendering graph data for:", conceptId, "in year:", iYear, iUri);
+  try {
+    await getDataAndLoad(iUri, iYear, conceptId);
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
 }
 
-function getDataAndLoad(iUri, iYear, conceptId) {
-  const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
-  const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
-	const conceptRDFUri = iUri + '_' + conceptId;
+async function getDataAndLoad(iUri, iYear, conceptId) {
+	const corsAnywhereUrl = "https://cors-anywhere.herokuapp.com/";
+	const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
+	const conceptRDFUri = iUri + "_" + conceptId;
 
-  const query = queryBuilder(callerId, category, conceptRDFUri, iYear);
+	const query = queryBuilder(callerId, category, conceptRDFUri, iYear);
 	console.log("Query:", query);
 
-  $('#spinner').show();
+	$("#spinner").show();
 
-  makeAjaxRequest(
-    `${corsAnywhereUrl}${sparqlEndpoint}`,
-    "POST",
-    {
-      Accept: "application/sparql-results+json",
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    { query: query },
-    function (data) {
+	// Helper function to convert an object to query parameters
+	function toQueryParams(data) {
+		return Object.keys(data)
+			.map(
+				(key) => encodeURIComponent(key) + "=" + encodeURIComponent(data[key])
+			)
+			.join("&");
+	}
+
+	// Data to be sent as query parameters
+	const data = { query: query };
+	const queryParams = toQueryParams(data);
+
+	// Updated makeAjaxRequest function call
+	await makeAjaxRequest(
+		`${corsAnywhereUrl}${sparqlEndpoint}?${queryParams}`, // Include query parameters in the URL
+		"GET", // Change to GET method
+		{
+			Accept: "application/sparql-results+json",
+			"Content-Type": "application/x-www-form-urlencoded",
+		},
+		{}, // No data in the body for GET request
+		function (data) {
 			formatDataGraphs(data, iUri, iYear, conceptId);
-      $("#spinner").hide();
-    },
-    function (jqXHR, textStatus, errorThrown) {
-      console.error("Error executing query:", errorThrown);
-      $("#spinner").hide();
-    },
-    callerId
-  );
+			$("#spinner").hide();
+		},
+		function (jqXHR, textStatus, errorThrown) {
+			console.error("Error executing query:", errorThrown);
+			$("#spinner").hide();
+		},
+		callerId
+	);
 }
 
-// This is the callback function that will process the data
-export function formatDataGraphs(data, iUri, iYear, conceptId) {
+export async function formatDataGraphs(data, iUri, iYear, conceptId) {
   const bindings = data.results.bindings;
 
   const result = createGraphDataFromBindings(bindings, conceptId, iYear);
-	 
-  // Recursive call for each targetId if the targetYear is less than or equal to maxYear
-  result.targetIds.forEach(target => {
+
+  globalNodes = globalNodes.concat(result.nodes);
+  globalEdges = globalEdges.concat(result.edges);
+
+  for (const target of result.targetIds) {
     if (target.targetYear < maxYear) {
-			renderGraphData(modifyYearInURL(iUri, true), target.targetYear, target.targetId);
+      await renderGraphData(modifyYearInURL(iUri, true), target.targetYear, target.targetId);
     }
-  });
+  }
 }
 
 function createGraphDataFromBindings(bindings, conceptId, iYear) {
   const nodes = [];
   const edges = [];
-  const processedNodes = new Set();
-  const processedEdges = new Set();
+  const targetYear = iYear + 1;
+  const targetIds = [];
 
   const nodeKey = `${conceptId}-${iYear}`;
-
   if (!processedNodes.has(nodeKey)) {
     createNode(conceptId, iYear, nodes);
     processedNodes.add(nodeKey);
   }
 
-  // Map source IDs and target IDs to their records for quick lookup
-  const targetMap = {};
-  const targetYear = iYear + 1;
-  const targetIds = [];
-
   bindings.forEach((record) => {
     const targetId = record.ID.value;
-    if (!targetMap[targetId]) targetMap[targetId] = [];
-    targetMap[targetId].push({ conceptId, startYear: iYear });
 
-    const nodeKey = `${targetId}-${targetYear}`;
-
-    if (!processedNodes.has(nodeKey)) {
+    const targetNodeKey = `${targetId}-${targetYear}`;
+    if (!processedNodes.has(targetNodeKey)) {
       createNode(targetId, targetYear, nodes);
-      processedNodes.add(nodeKey);
+      processedNodes.add(targetNodeKey);
     }
 
     const edgeKey = `${conceptId}-${iYear}->${targetId}-${targetYear}`;
-
     if (!processedEdges.has(edgeKey)) {
       edges.push({
         source: `${conceptId}-${iYear}`,
