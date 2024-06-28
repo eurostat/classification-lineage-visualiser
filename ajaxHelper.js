@@ -41,4 +41,29 @@ export function fakeAjaxRequest(url, method, headers, data, onSuccess, onError, 
     onError(jqxhr, textStatus, error);
   });
 }
+export class RequestQueue {
+  constructor(maxConcurrent) {
+    this.queue = [];
+    this.activeCount = 0;
+    this.maxConcurrent = maxConcurrent;
+  }
+
+  add(promiseFn) {
+    return new Promise((resolve, reject) => {
+      this.queue.push(() => promiseFn().then(resolve).catch(reject));
+      this.next();
+    });
+  }
+
+  next() {
+    if (this.activeCount < this.maxConcurrent && this.queue.length > 0) {
+      const promiseFn = this.queue.shift();
+      this.activeCount++;
+      promiseFn().finally(() => {
+        this.activeCount--;
+        this.next();
+      });
+    }
+  }
+}
 

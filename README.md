@@ -13,6 +13,34 @@ A front-end application to visualize the lineage of classification items over ti
 - The application first looks ahead by incrementing the reference year and querying data for each subsequent year.
 - Then, it looks behind by decrementing the reference year (subtracting 1 each time) and querying data for each previous year.
 
+## Logic Steps
+
+**Initialization:**
+
+* Start with a concept ID and year to find targets.
+
+**Data Fetching:**
+
+* Use AJAX to fetch targets for the given concept ID and year.
+* We are using Cache API for the development purposes.
+
+**Target Processing:**
+
+* Each AJAX request returns targets for the given concept ID and year.
+* Look for targets in both future and past years (2 calls per concept ID per year).
+* There can be 0 to N targets for each request.
+
+**Node and Edge Management:**
+
+* If a concept ID has targets, write the nodes and edges list.
+
+**Recursive Search:**
+
+* Perform a recursive search where each target ID becomes a new concept ID.
+    * Limits (max year, min year) are in place to avoid infinite recursion.
+* Iterate through all years until the limits are reached.
+
+
 ## Recent Development Overview
 
 **Classification Lineage Visualizer Prototype:**

@@ -1,191 +1,126 @@
 import { getYearComparisonURI } from "./uriHelper.js";
-import { queryBuilder } from "./queryBuilder.js";
-import { makeAjaxRequest as makeAjaxRequest } from "./ajaxHelper.js";
+import { createNode, createEdge } from "./nodesAndEdges.js";
+import { RequestQueue } from "./ajaxHelper.js";
+import { fetchAndProcessData } from "./fetchAndProcessData.js";
 
 const maxYear = 2024;
 const minYear = 2017;
-let baseYear = 0;
-let baseUri = "";
-let callerId = "";
-let category = "";
-let baseConceptId = "";
+export let callerId = "";
+export let category = "";
 let globalNodes = [];
 let globalEdges = [];
 let processedNodes = new Set();
 let processedEdges = new Set();
 
 export async function composeGraphData(id, cat, uri, iYear, conceptId) {
-	callerId = id;
-	category = cat;
-	baseYear = iYear;
-	baseUri = uri;
-	baseConceptId = conceptId;
-	const target = { isPositive: true };
-	const iUri = getYearComparisonURI(
-		baseUri,
-		category,
-		baseYear,
-		target.isPositive
-	);
+  callerId = id;
+  category = cat;
 
-	globalNodes = [];
-	globalEdges = [];
-	processedNodes = new Set();
-	processedEdges = new Set();
+  globalNodes = [];
+  globalEdges = [];
+  processedNodes = new Set();
+  processedEdges = new Set();
 
-	await renderGraphData(iUri, iYear, conceptId);
+  // Start positive and negative recursion in parallel
+  await renderLineageData(uri, iYear, conceptId);
+
+  // Log nodes and edges once all recursion is completed
+  logGraphData();
 }
 
-async function renderGraphData(iUri, iYear, conceptId) {
-	if (iYear > maxYear || iYear < minYear) return; // Stop recursion based on year bounds
+async function renderLineageData(iUri, iYear, conceptId) {
+  const positiveUri = getYearComparisonURI(iUri, category, iYear, true);
+  const negativeUri = getYearComparisonURI(iUri, category, iYear, false);
 
-	console.log("Rendering graph data for:", conceptId, "in year:", iYear, iUri);
-	try {
-		const newTargets = await getDataAndLoad(iUri, iYear, conceptId);
-		if (newTargets.length > 0) {
-			const newPromises = newTargets.map((target) =>
-				renderGraphData(
-					getYearComparisonURI(baseUri, category, baseYear, target.isPositive),
-					target.targetYear,
-					target.targetId
-				)
-			);
-			await Promise.all(newPromises); // Wait until all promises are resolved
-		}
-	} catch (error) {
-		console.error("Error:", error.message);
-		throw error; // Halting on error
-	}
+  await Promise.all([
+    renderGraphData(positiveUri, conceptId, iYear, iYear + 1),
+    renderGraphData(negativeUri, conceptId, iYear, iYear - 1),
+  ]).catch((error) => {
+    console.error("Error:", error.message);
+    throw error; // Halting on error
+  });
 }
 
-async function getDataAndLoad(iUri, iYear, conceptId) {
-	const corsAnywhereUrl = "https://cors-anywhere.herokuapp.com/";
-	const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
-	const conceptRDFUri = iUri + "_" + conceptId;
+const requestQueue = new RequestQueue(5); // Limit to 5 concurrent requests
 
-	const query = queryBuilder(callerId, category, conceptRDFUri, iYear);
-	console.log("Query:", query);
+async function renderGraphData(iUri, conceptId, iYear, targetYear) {
+  if (iYear < minYear || iYear > maxYear) return; // Stop recursion based on year bounds
 
-	$("#spinner").show();
+  const nodeKey = `${conceptId}-${iYear}`;
+  console.log(conceptId.substring(3, 9) + "-" + iYear, iUri, processedNodes.has(nodeKey));
+  if (processedNodes.has(nodeKey)) return; // Stop if node already processed
 
-	// Helper function to convert an object to query parameters
-	function toQueryParams(data) {
-		return Object.keys(data)
-			.map(
-				(key) => encodeURIComponent(key) + "=" + encodeURIComponent(data[key])
-			)
-			.join("&");
-	}
-
-	// Data to be sent as query parameters
-	const data = { query: query };
-	const queryParams = toQueryParams(data);
-
-	// Updated makeAjaxRequest function call
-	return new Promise((resolve, reject) => {
-		makeAjaxRequest(
-			`${corsAnywhereUrl}${sparqlEndpoint}?${queryParams}`, // Include query parameters in the URL
-			"GET", // Change to GET method
-			{
-				Accept: "application/sparql-results+json",
-				"Content-Type": "application/x-www-form-urlencoded",
-			},
-			{}, // No data in the body for GET request
-			function (data) {
-				const newTargets = formatDataGraphs(data, iUri, iYear, conceptId);
-				$("#spinner").hide();
-				resolve(newTargets); // Resolve promise with new targets
-			},
-			function (jqXHR, textStatus, errorThrown) {
-				console.error("Error executing query:", errorThrown);
-				$("#spinner").hide();
-				reject(new Error(errorThrown)); // Reject promise with error
-			},
-			callerId
-		);
-	});
+  try {
+    const newTargets = await requestQueue.add(() => fetchAndProcessData(iUri, conceptId, iYear, targetYear));
+    console.log("New Targets:", newTargets);
+    if (newTargets.length > 0) {
+      // Mark the current node as processed before processing children
+      console.warn("Node is processed:", nodeKey);
+      processedNodes.add(nodeKey);
+      const newPromises = newTargets.map((target) => {
+        console.log("New Target:", target.targetId.substring(3, 9) + "-" + target.targetYear, iUri);
+        return renderLineageData(iUri, target.targetYear, target.targetId);
+      });
+      await Promise.all(newPromises).catch((error) => {
+        console.error("Error:", error.message);
+        throw error; // Halting on error
+      }); // Wait until all promises are resolved
+    }
+  } catch (error) {
+    console.error("Error:", error.message);
+    throw error; // Halting on error
+  }
 }
 
-export function formatDataGraphs(data, iUri, iYear, conceptId) {
-	const bindings = data.results.bindings;
+export function getTargets(data, conceptId, iYear, targetYear) {
+  const bindings = data.results.bindings;
 
-	const result = createGraphDataFromBindings(bindings, conceptId, iYear);
+  const result = createGraphDataFromBindings(bindings, conceptId, iYear, targetYear);
 
-	globalNodes = globalNodes.concat(result.nodes);
-	globalEdges = globalEdges.concat(result.edges);
+  globalNodes = globalNodes.concat(result.nodes);
+  globalEdges = globalEdges.concat(result.edges);
 
-	return result.targetIds; // Return target IDs for further processing
+  return result.targetIds; // Return target IDs for further processing
 }
 
-function createGraphDataFromBindings(bindings, conceptId, iYear) {
-	const nodes = [];
-	const edges = [];
-	const targetYearPositive = iYear + 1;
-	const targetYearNegative = iYear - 1;
-	const targetIds = [];
+function createGraphDataFromBindings(bindings, conceptId, iYear, targetYear) {
+  const nodes = [];
+  const edges = [];
+  const targetIds = [];
 
-	const nodeKey = `${conceptId}-${iYear}`;
-	if (!processedNodes.has(nodeKey)) {
-		createNode(conceptId, iYear, nodes);
-		processedNodes.add(nodeKey);
-	}
+  const nodeKey = `${conceptId}-${iYear}`;
+  if (!processedNodes.has(nodeKey)) {
+    createNode(conceptId, iYear, nodes);
+    processedNodes.add(nodeKey);
+  }
 
-	bindings.forEach((record) => {
-		const targetId = record.ID.value;
+  bindings.forEach((record) => {
+    const targetId = record.ID.value;
+    processBindings(targetId, nodes, conceptId, iYear, targetYear, edges, targetIds);
+  });
 
-		// Positive year direction
-		const targetNodeKeyPositive = `${targetId}-${targetYearPositive}`;
-		if (!processedNodes.has(targetNodeKeyPositive)) {
-			createNode(targetId, targetYearPositive, nodes);
-			processedNodes.add(targetNodeKeyPositive);
-		}
-
-		const edgeKeyPositive = `${conceptId}-${iYear}->${targetId}-${targetYearPositive}`;
-		if (!processedEdges.has(edgeKeyPositive)) {
-			edges.push({
-				source: `${conceptId}-${iYear}`,
-				target: `${targetId}-${targetYearPositive}`,
-			});
-			processedEdges.add(edgeKeyPositive);
-		}
-
-		targetIds.push({
-			targetId,
-			targetYear: targetYearPositive,
-			isPositive: true,
-		});
-
-		// Negative year direction
-		const targetNodeKeyNegative = `${targetId}-${targetYearNegative}`;
-		if (!processedNodes.has(targetNodeKeyNegative)) {
-			createNode(targetId, targetYearNegative, nodes);
-			processedNodes.add(targetNodeKeyNegative);
-		}
-
-		const edgeKeyNegative = `${conceptId}-${iYear}->${targetId}-${targetYearNegative}`;
-		if (!processedEdges.has(edgeKeyNegative)) {
-			edges.push({
-				source: `${conceptId}-${iYear}`,
-				target: `${targetId}-${targetYearNegative}`,
-			});
-			processedEdges.add(edgeKeyNegative);
-		}
-
-		targetIds.push({
-			targetId,
-			targetYear: targetYearNegative,
-			isPositive: false,
-		});
-	});
-
-	return { nodes, edges, targetIds };
+  return { nodes, edges, targetIds };
 }
 
-function createNode(id, year, nodes) {
-	const node = {
-		id: `${id}-${year}`,
-		label: id,
-		year: year,
-	};
-	nodes.push(node);
+function processBindings(targetId, nodes, conceptId, iYear, targetYear, edges, targetIds) {
+  const targetNodeKey = `${targetId}-${targetYear}`;
+  if (!processedNodes.has(targetNodeKey)) {
+    createNode(targetId, targetYear, nodes);
+    // Processed nodes are not added here to ensure the recursion handles them correctly
+		processedNodes.add(targetNodeKey);
+  }
+
+  const sourceNodeKey = `${conceptId}-${iYear}`;
+  const edgeKey = `${sourceNodeKey}->${targetNodeKey}`;
+  if (!processedEdges.has(edgeKey)) {
+    createEdge(edges, sourceNodeKey, targetNodeKey);
+    processedEdges.add(edgeKey);
+  }
+
+  targetIds.push({ targetId, targetYear });
+}
+
+function logGraphData() {
+  console.log("Global Nodes:", globalNodes);
+  console.log("Global Edges:", globalEdges);
 }
