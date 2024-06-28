@@ -12,8 +12,14 @@ export async function makeAjaxRequest(url, method, headers, data, onSuccess, onE
       // If the response is not in the cache, fetch it
       try {
         const response = await fetch(url, { headers });
-        // Put the fetched response into the cache
-        cache.put(url, response.clone());
+        const contentType = response.headers.get("content-type");
+        
+        // Only cache the response if it's JSON
+        if (contentType && contentType.includes("application/json")) {
+          // Put the fetched response into the cache
+          cache.put(url, response.clone());
+        }
+        
         onSuccess(await response.json());
       } catch (error) {
         onError(error);
