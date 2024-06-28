@@ -24,21 +24,21 @@ export async function fetchAndProcessData(iUri, conceptId, iYear, targetYear) {
       },
       {}, // No data in the body for GET request
       function (data) {
-        console.log("Raw Response Data:", data); // Log the raw response data
+        // console.log("Raw Response Data:", data); // Log the raw response data
         try {
           let parsedData;
           if (typeof data === "string") {
             try {
               parsedData = JSON.parse(data); // Attempt to parse the data as JSON
             } catch (jsonError) {
-              console.error("JSON parsing error:", jsonError, "Response data:", data);
+              // console.error("JSON parsing error:", jsonError, "Response data:", data);
               reject(new Error("Invalid JSON response"));
               return;
             }
           } else {
             parsedData = data;
           }
-          console.log("Parsed Response Data:", parsedData);
+          // console.log("Parsed Response Data:", parsedData);
           const newTargets = getTargets(parsedData, conceptId, iYear, targetYear);
           $("#spinner").hide();
           resolve(newTargets); // Resolve promise with new targets
