@@ -15,7 +15,7 @@ function createEdge(edges, sourceNodeKey, targetNodeKey) {
   edges.add(JSON.stringify(edge));
 }
 
-export function setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedNodes, processedEdges) {
+export function setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedEdges) {
   const nodes = new Set();
   const edges = new Set();
   const targetIds = [];

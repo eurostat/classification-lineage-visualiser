@@ -5,33 +5,24 @@ import { setNodesAndEdges } from "./nodesAndEdges.js";
 
 const maxYear = 2024;
 const minYear = 2017;
-export let callerId = "";
-export let category = "";
 let globalNodes = new Set();
 let globalEdges = new Set();
 let processedNodes = new Set();
 let processedEdges = new Set();
 
 export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLabel) {
-  callerId = id;
-  category = cat;
+  globalNodes.clear();
+  globalEdges.clear();
+  processedNodes.clear();
+  processedEdges.clear();
 
-  globalNodes = new Set();
-  globalEdges = new Set();
-  processedNodes = new Set();
-  processedEdges = new Set();
-
-  await renderLineageData(uri, iYear, conceptId, conceptLabel)
-    .catch((error) => {
-      console.error("Error:", error.message);
-      throw error; // Halting on error
-    });
+  // Start positive and negative recursion in parallel
+  await renderLineageData(uri, iYear, conceptId, conceptLabel);
 
   const nodes = Array.from(globalNodes).map(node => JSON.parse(node));
   const edges = Array.from(globalEdges).map(edge => JSON.parse(edge));
   return { nodes, edges };
 }
-
 
 async function renderLineageData(iUri, iYear, conceptId, conceptLabel) {
   const positiveUri = getYearComparisonURI(iUri, category, iYear, true);
@@ -42,8 +33,8 @@ async function renderLineageData(iUri, iYear, conceptId, conceptLabel) {
     await renderGraphData(negativeUri, conceptId, conceptLabel, iYear, iYear - 1);
   } catch (error) {
     console.error("Error:", error.message);
-    throw error; // Halting on error
-  };
+    throw error;
+  }
 }
 
 const requestQueue = new RequestQueue(5); // Limit to 5 concurrent requests
@@ -59,14 +50,7 @@ async function renderGraphData(iUri, conceptId, conceptLabel, iYear, targetYear)
     if (newTargets.length > 0) {
       // Mark the current node as processed before processing children
       processedNodes.add(nodeKey);
-      const newPromises = newTargets.map((target) => {
-        // console.log("New concept:", nodeKey, iUri);
-        return renderLineageData(iUri, target.targetYear, target.targetId, target.targetLabel);
-      });
-      await Promise.all(newPromises).catch((error) => {
-        console.error("Error:", error.message);
-        throw error; // Halting on error
-      }); // Wait until all promises are resolved
+      await Promise.all(newTargets.map(target => renderLineageData(iUri, target.targetYear, target.targetId, target.targetLabel)));
     }
   } catch (error) {
     console.error("Error:", error.message);
@@ -76,16 +60,10 @@ async function renderGraphData(iUri, conceptId, conceptLabel, iYear, targetYear)
 
 export function getTargets(data, conceptId, conceptLabel, iYear, targetYear) {
   const bindings = data.results.bindings;
-
-  const result = setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedNodes, processedEdges);
+  const result = setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedEdges);
 
   result.nodes.forEach(node => globalNodes.add(node));
   result.edges.forEach(edge => globalEdges.add(edge));
 
-  return result.targetIds; // Return target IDs for further processing
-}
-
-function logGraphData() {
-  console.log("Global Nodes:", Array.from(globalNodes).map(node => JSON.parse(node)));
-  console.log("Global Edges:", Array.from(globalEdges).map(edge => JSON.parse(edge)));
+  return result.targetIds;
 }
