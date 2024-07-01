@@ -60,7 +60,7 @@ $("#concepts").select2()
 		// console.log("Button clicked:", callerId, category, baseUri, baseYear, conceptId);
 		// composeGraphData(callerId, category, baseUri, baseYear, conceptId);
 		// composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2020, "190190990080");
-		composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2022, "846229100080", "8462 99 20 0080");
+		composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2022, "846229100080", "8462 29 10");
 		// composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2021, "846299200080");
 
 

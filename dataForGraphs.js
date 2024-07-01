@@ -7,7 +7,7 @@ const maxYear = 2024;
 const minYear = 2017;
 export let callerId = "";
 export let category = "";
-let globalNodes = [];
+let globalNodes = new Set();
 let globalEdges = [];
 let processedNodes = new Set();
 let processedEdges = new Set();
@@ -16,7 +16,7 @@ export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLa
   callerId = id;
   category = cat;
 
-  globalNodes = [];
+  globalNodes = new Set();
   globalEdges = [];
   processedNodes = new Set();
   processedEdges = new Set();
@@ -51,13 +51,11 @@ const requestQueue = new RequestQueue(5); // Limit to 5 concurrent requests
 async function renderGraphData(iUri, conceptId, conceptLabel, iYear, targetYear) {
   if (iYear < minYear || iYear > maxYear) return; // Stop recursion based on year bounds
 
-  const nodeKey = `${conceptId}-${iYear}`;
-  // console.log(nodeKey.substring(4,8), iUri, "skip next:", processedNodes.has(nodeKey));
+  const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
   if (processedNodes.has(nodeKey)) return; // Stop if node already processed
 
   try {
     const newTargets = await requestQueue.add(() => fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, targetYear));
-    // console.log(nodeKey ,"Targets:", newTargets);
     if (newTargets.length > 0) {
       // Mark the current node as processed before processing children
       processedNodes.add(nodeKey);
@@ -81,26 +79,13 @@ export function getTargets(data, conceptId, conceptLabel, iYear, targetYear) {
 
   const result = setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedNodes, processedEdges);
 
-  globalNodes = globalNodes.concat(result.nodes);
+  result.nodes.forEach(node => globalNodes.add(node));
   globalEdges = globalEdges.concat(result.edges);
 
   return result.targetIds; // Return target IDs for further processing
 }
 
 function logGraphData() {
-  console.log("duplicate nodes:", globalNodes.length !== new Set(globalNodes.map((node) => node.id)).size);
-  console.log("Global Nodes:", globalNodes);
-
+  console.log("Global Nodes:", Array.from(globalNodes).map(node => JSON.parse(node)));
   console.log("Global Edges:", globalEdges);
-  // const occurrences = globalNodes.filter((node) => node.id === "846229000080-2023");
-  // console.log("Occurrences:", occurrences);
-  // console.log(processedNodes)
-  // // check if id is in processedNodes
-  //     targetNodeKey === "846229900080-2022" ||
-  //     targetNodeKey === "846229100080-2021" ||
-  //     targetNodeKey === "846229000080-2023") {
-  // console.log(processedNodes.has("846229000080-2023"))
-  // console.log(processedNodes.has("846229100080-2021"))
-  // console.log(processedNodes.has("846229900080-2022"))
-
 }
