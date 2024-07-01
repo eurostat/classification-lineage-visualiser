@@ -1,7 +1,7 @@
 import { toQueryParams } from "./uriHelper.js";
 import { queryBuilder } from "./queryBuilder.js";
 import { makeAjaxRequest } from "./ajaxHelper.js";
-import { callerId, category, getTargets } from "./dataForGraphs.js";
+import { category, getTargets } from "./dataForGraphs.js";
 
 export async function fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, targetYear) {
   const corsAnywhereUrl = "https://cors-anywhere.herokuapp.com/";
@@ -11,7 +11,7 @@ export async function fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, 
   $("#spinner").show();
 
   // Data to be sent as query parameters
-  const data = { query: queryBuilder(callerId, category, conceptRDFUri, iYear) };
+  const data = { query: queryBuilder('concepts', category, conceptRDFUri, iYear) };
   const queryParams = toQueryParams(data);
 
   return new Promise((resolve, reject) => {
@@ -53,7 +53,7 @@ export async function fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, 
         $("#spinner").hide();
         reject(new Error(errorThrown)); // Reject promise with error
       },
-      callerId,`${conceptId}-${iYear}-${targetYear}`
+      `${conceptId}-${iYear}-${targetYear}`
     );
   });
 }

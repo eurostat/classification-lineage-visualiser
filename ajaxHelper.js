@@ -1,5 +1,5 @@
 // File: ajaxHelper.js
-export async function makeAjaxRequest(url, method, headers, data, onSuccess, onError, _, memo) {
+export async function makeAjaxRequest(url, method, headers, data, onSuccess, onError, debugInfo) {
   if (method === "GET") {
     // Try to get the response from the cache
     const cache = await caches.open('classification-cache');
@@ -20,7 +20,7 @@ export async function makeAjaxRequest(url, method, headers, data, onSuccess, onE
 					cache.put(url, response.clone());
 				} else {
 					const responseText = await response.text();
-          console.warn("Response is not JSON:", memo, "Response text:", responseText);
+          console.warn("Response is not JSON:", debugInfo, "Response text:", responseText);
 				}
         onSuccess(await response.json());
       } catch (error) {
