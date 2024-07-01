@@ -1,39 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Network Visualization with D3.js</title>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="spinner.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
   <style>
     .link {
       stroke: #666;
       stroke-width: 1.5px;
     }
+
     .highlighted-link {
       stroke: #007BFF;
       stroke-width: 3px;
     }
+
     .node rect {
       fill: #008080;
       cursor: pointer;
     }
+
     .node text {
       fill: white;
       font-size: 10px;
       text-anchor: middle;
       dominant-baseline: central;
     }
+
     .year-label {
       font-size: 12px;
       font-weight: bold;
     }
   </style>
 </head>
+
 <body>
-  <svg id="visualization" width="1000" height="2600"></svg>
-  <script type="module" src="./main.js"></script>
-  <!-- <script type="module" src="./queryBuilder.js"></script> -->
+
+  <header>
+    <select name="categories" id="categories" style="width: 200px;">
+      <option></option>
+    </select>
+    <select id="versions" style="width: 200px;" disabled>
+      <option></option>
+    </select>
+    <select id="concepts" style="width: 500px;" disabled>
+      <option></option>
+    </select>
+    <button id="submit-button">Submit</button>
+  </header>
+
+  <main>
+    <div id="spinner" style="display: none;">
+      <div class="loader"></div>
+    </div>
+
+    <svg id="visualization" width="1000" height="2600"></svg>
+  </main>
+
+  <script src="select2.js" type="module"></script>
+
 </body>
+
 </html>

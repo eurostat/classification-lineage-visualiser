@@ -21,17 +21,17 @@ export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLa
   processedNodes = new Set();
   processedEdges = new Set();
 
-  // Start positive and negative recursion in parallel
   await renderLineageData(uri, iYear, conceptId, conceptLabel)
-  .catch( (error) => {
-			console.error("Error:", error.message);
-			throw error; // Halting on error
-		}
-	);
+    .catch((error) => {
+      console.error("Error:", error.message);
+      throw error; // Halting on error
+    });
 
-  // Log nodes and edges once all recursion is completed
-  logGraphData();
+  const nodes = Array.from(globalNodes).map(node => JSON.parse(node));
+  const edges = Array.from(globalEdges).map(edge => JSON.parse(edge));
+  return { nodes, edges };
 }
+
 
 async function renderLineageData(iUri, iYear, conceptId, conceptLabel) {
   const positiveUri = getYearComparisonURI(iUri, category, iYear, true);
