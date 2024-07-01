@@ -1,3 +1,4 @@
+// "dataForGraphs.js"
 import { getYearComparisonURI } from "./uriHelper.js";
 import { RequestQueue } from "./ajaxHelper.js";
 import { fetchAndProcessData } from "./fetchAndProcessData.js";
@@ -5,11 +6,12 @@ import { setNodesAndEdges } from "./nodesAndEdges.js";
 
 const maxYear = 2024;
 const minYear = 2017;
-let globalNodes = new Set();
-let globalEdges = new Set();
-let processedNodes = new Set();
-let processedEdges = new Set();
 let category = "";  
+
+const globalNodes = new Set();
+const globalEdges = new Set();
+const processedNodes = new Set();
+const processedEdges = new Set();
 
 export async function composeGraphData( cat, uri, iYear, conceptId, conceptLabel) {
   category = cat;
