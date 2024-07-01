@@ -13,13 +13,12 @@ export function getDataAndLoadSelect2(callerId, category, uri, version) {
   $('#spinner').show();
 
   makeAjaxRequest(
-    `${corsAnywhereUrl}${sparqlEndpoint}`,
-    'POST',
+    `${corsAnywhereUrl}${sparqlEndpoint}?query=${encodeURIComponent(query)}`,
+    'GET',
     {
       'Accept': 'application/sparql-results+json',
-      'Content-Type': 'application/x-www-form-urlencoded'
     },
-    { query: query },
+    null,
     function (data) {
       const formattedData = formatData(callerId, data);
       initializeSelect2(callerId, formattedData);
