@@ -1,5 +1,5 @@
 // File: ajaxHelper.js
-export async function makeAjaxRequest(url, method, headers, data, onSuccess, onError) {
+export async function makeAjaxRequest(url, method, headers, data, onSuccess, onError, _, memo) {
   if (method === "GET") {
     // Try to get the response from the cache
     const cache = await caches.open('classification-cache');
@@ -15,11 +15,13 @@ export async function makeAjaxRequest(url, method, headers, data, onSuccess, onE
         const contentType = response.headers.get("content-type");
         
         // Only cache the response if it's JSON
-        if (contentType && contentType.includes("application/json")) {
-          // Put the fetched response into the cache
-          cache.put(url, response.clone());
-        }
-        
+        if (contentType && (contentType.includes("application/json") || contentType.includes("application/sparql-results+json"))) {
+					// Put the fetched response into the cache
+					cache.put(url, response.clone());
+				} else {
+					const responseText = await response.text();
+          console.warn("Response is not JSON:", memo, "Response text:", responseText);
+				}
         onSuccess(await response.json());
       } catch (error) {
         onError(error);
