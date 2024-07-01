@@ -1,9 +1,9 @@
-import { getConnectedNodeIds, getFilteredNodes } from "./data.js";
 import { getXScale, getYScale } from "./scales.js";
 import { positionNodes } from "./nodes.js";
 
 export function renderChart(graphData) {
 	const { nodes, edges } = graphData;
+	console.log(nodes);
 
 	const svg = d3.select("#visualization"),
 		width = +svg.attr("width"),

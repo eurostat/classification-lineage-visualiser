@@ -9,8 +9,10 @@ let globalNodes = new Set();
 let globalEdges = new Set();
 let processedNodes = new Set();
 let processedEdges = new Set();
+let category = "";  
 
-export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLabel) {
+export async function composeGraphData( cat, uri, iYear, conceptId, conceptLabel) {
+  category = cat;
   globalNodes.clear();
   globalEdges.clear();
   processedNodes.clear();

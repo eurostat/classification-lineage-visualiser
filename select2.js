@@ -53,8 +53,8 @@ $("#submit-button").on("click", async function () {
 	// const conceptLabel = $("#concepts").select2('data')[0].text;
 	
 	try {
-		const graphData = await composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2022, "846229100080", "8462 29 10");
-		// const graphData = await composeGraphData("concepts", category, uri, baseYear, conceptId, conceptLabel);
+		const graphData = await composeGraphData("cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2022, "846229100080", "8462 29 10");
+		// const graphData = await composeGraphData(category, uri, baseYear, conceptId, conceptLabel);
 		renderChart(graphData);
 	} catch (error) {
 		console.error("Error:", error.message);

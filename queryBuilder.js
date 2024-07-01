@@ -61,12 +61,12 @@ function queryBuilderForGraphs(uri){
   `
 }
 
-export function queryBuilder(callerId, category, uri, year) {
+export function queryBuilder(uri, year, callerId, category) {
 	if (callerId === "versions") {
 		return queryBuilderForCodeId(category, uri, year);
 	} else if (callerId === "categories") {
 		return queryBuilderForVersion(category);
 	} else if (callerId === "concepts") {
-    return queryBuilderForGraphs(uri);
-  }
+		return queryBuilderForGraphs(uri);
+	}
 }
