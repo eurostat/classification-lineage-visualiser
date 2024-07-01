@@ -8,7 +8,7 @@ const minYear = 2017;
 export let callerId = "";
 export let category = "";
 let globalNodes = new Set();
-let globalEdges = [];
+let globalEdges = new Set();
 let processedNodes = new Set();
 let processedEdges = new Set();
 
@@ -17,7 +17,7 @@ export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLa
   category = cat;
 
   globalNodes = new Set();
-  globalEdges = [];
+  globalEdges = new Set();
   processedNodes = new Set();
   processedEdges = new Set();
 
@@ -80,12 +80,12 @@ export function getTargets(data, conceptId, conceptLabel, iYear, targetYear) {
   const result = setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedNodes, processedEdges);
 
   result.nodes.forEach(node => globalNodes.add(node));
-  globalEdges = globalEdges.concat(result.edges);
+  result.edges.forEach(edge => globalEdges.add(edge));
 
   return result.targetIds; // Return target IDs for further processing
 }
 
 function logGraphData() {
   console.log("Global Nodes:", Array.from(globalNodes).map(node => JSON.parse(node)));
-  console.log("Global Edges:", globalEdges);
+  console.log("Global Edges:", Array.from(globalEdges).map(edge => JSON.parse(edge)));
 }
