@@ -40,8 +40,11 @@ $("#concepts").select2()
 		const uri = $("#versions").select2("data")[0].data.uri;
 		const baseYear = Number($("#versions").val());
 		const conceptId = e.params.data.id;
-		console.log("Concept selected:", callerId, category, uri, baseYear, conceptId);
-		composeGraphData(callerId, category, uri, baseYear, conceptId);
+		// console.log("Button clicked", $("#concepts").select2('data')[0]);
+		const conceptLabel = e.params.data.label;
+		// console.log("label:", conceptLabel);
+		// console.log("Concept selected:", callerId, category, uri, baseYear, conceptId);
+		composeGraphData(callerId, category, uri, baseYear, conceptId, conceptLabel);
 	});
 
 
@@ -56,7 +59,8 @@ $("#concepts").select2()
 
 		// console.log("Button clicked:", callerId, category, baseUri, baseYear, conceptId);
 		// composeGraphData(callerId, category, baseUri, baseYear, conceptId);
-		composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2022, "846229100080");
+		// composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2020, "190190990080");
+		composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2022, "846229100080", "8462 99 20 0080");
 		// composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2021, "846299200080");
 
 

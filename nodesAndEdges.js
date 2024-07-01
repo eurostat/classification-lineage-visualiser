@@ -1,7 +1,7 @@
-function createNode(nodeKey, id, year, nodes) {
+function createNode(nodeKey, label, year, nodes) {
   const node = {
     id: nodeKey,
-    label: id,
+    label: label,
     year: year,
   };
   nodes.push(node);
@@ -15,25 +15,23 @@ function createEdge(edges, sourceNodeKey, targetNodeKey) {
   edges.push(edge);
 }
 
-export function setNodesAndEdges(bindings, conceptId, iYear, targetYear, processedNodes, processedEdges) {
+export function setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedNodes, processedEdges) {
   const nodes = [];
   const edges = [];
   const targetIds = [];
 
   const nodeKey = `${conceptId}-${iYear}`;
   if (!processedNodes.has(nodeKey)) {
-    createNode(nodeKey, conceptId, iYear, nodes);
+    createNode(nodeKey, conceptLabel, iYear, nodes);
     processedNodes.add(nodeKey);
   }
 
   bindings.forEach((record) => {
     const targetId = record.ID.value;
-    const targetNodeKey = `${targetId}-${targetYear}`;
+    const targetLabel = record.CODE.value;
+    const targetNodeKey = `${targetId}-${iYear}`;
     if (!processedNodes.has(targetNodeKey)) {
-      createNode(targetNodeKey, targetId, targetYear, nodes);
-      if (processedNodes.size > 10) {
-      processedNodes.add(targetNodeKey);
-      }
+      createNode(targetNodeKey, targetLabel, targetYear, nodes);
     }
 
     const edgeKey = [nodeKey, targetNodeKey].sort().join('-');
@@ -42,7 +40,7 @@ export function setNodesAndEdges(bindings, conceptId, iYear, targetYear, process
       processedEdges.add(edgeKey);
     }
 
-    targetIds.push({ targetId, targetYear });
+    targetIds.push({ targetId, targetYear, targetLabel });
   });
 
   return { nodes, edges, targetIds };

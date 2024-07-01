@@ -3,7 +3,7 @@ import { queryBuilder } from "./queryBuilder.js";
 import { makeAjaxRequest } from "./ajaxHelper.js";
 import { callerId, category, getTargets } from "./dataForGraphs.js";
 
-export async function fetchAndProcessData(iUri, conceptId, iYear, targetYear) {
+export async function fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, targetYear) {
   const corsAnywhereUrl = "https://cors-anywhere.herokuapp.com/";
   const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
   const conceptRDFUri = iUri + "_" + conceptId;
@@ -39,7 +39,7 @@ export async function fetchAndProcessData(iUri, conceptId, iYear, targetYear) {
             parsedData = data;
           }
           // console.log("Parsed Response Data:", parsedData);
-          const newTargets = getTargets(parsedData, conceptId, iYear, targetYear);
+          const newTargets = getTargets(parsedData, conceptId, conceptLabel, iYear, targetYear);
           $("#spinner").hide();
           resolve(newTargets); // Resolve promise with new targets
         } catch (e) {
