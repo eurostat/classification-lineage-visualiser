@@ -49,11 +49,11 @@ export async function fetchAndProcessData(iUri, conceptId, iYear, targetYear) {
         }
       },
       function (jqXHR, textStatus, errorThrown) {
-        console.error("AJAX request error:", textStatus, errorThrown, "Response text:", jqXHR.responseText);
+        console.error("AJAX request error:", textStatus, errorThrown, "Response text:", jqXHR.responseText, conceptRDFUri);
         $("#spinner").hide();
         reject(new Error(errorThrown)); // Reject promise with error
       },
-      callerId
+      callerId,`${conceptId}-${iYear}-${targetYear}`
     );
   });
 }
