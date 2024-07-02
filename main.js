@@ -16,7 +16,7 @@ export function renderChart(graphData) {
 
 	// Set the width and height of your SVG based on your data
 	const width = (maxYear - minYear + 1) * 350; // 350 pixels per year
-	const height = maxNodesInYear * 99; // 99 pixels per node
+	const height = maxNodesInYear * 120; // 99 pixels per node
 
 	const svg = d3
 		.select("#visualization")
