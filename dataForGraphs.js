@@ -5,8 +5,10 @@ import { setNodesAndEdges } from "./nodesAndEdges.js";
 
 const maxYear = 2024;
 const minYear = 2017;
+
 export let callerId = "";
 export let category = "";
+
 const globalNodes = new Set();
 const globalEdges = new Set();
 const processedNodes = new Set();
@@ -85,9 +87,4 @@ export function getTargets(data, conceptId, conceptLabel, iYear, targetYear) {
   result.edges.forEach(edge => globalEdges.add(edge));
 
   return result.targetIds; // Return target IDs for further processing
-}
-
-function logGraphData() {
-  console.log("Global Nodes:", Array.from(globalNodes).map(node => JSON.parse(node)));
-  console.log("Global Edges:", Array.from(globalEdges).map(edge => JSON.parse(edge)));
 }
