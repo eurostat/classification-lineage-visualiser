@@ -65,11 +65,16 @@ $("#submit-button").on("click", async function () {
 	}
 });
 
-$("#dummy-button").on("click", async function () {
-	try {
-		const graphData = await composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2022, "846229100080", "8462 29 10");
-		renderChart(graphData);
-	} catch (error) {
-		console.error("Error:", error.message);
+$("#dataOptions").on("change", async function () {
+	$("#visualization").empty();
+	const selectedOption = $(this).val(); // get the selected option
+
+	let graphData;
+	if (selectedOption === "1") {
+		graphData = await composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2022, "846229100080", "8462 29 10");
+	} else if (selectedOption === "2") {
+		graphData = await composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2020/CN2020_CN2021", 2020, "190190990080", "1901 90 99");
 	}
+
+	renderChart(graphData);
 });
