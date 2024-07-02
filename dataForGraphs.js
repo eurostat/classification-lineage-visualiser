@@ -7,19 +7,19 @@ const maxYear = 2024;
 const minYear = 2017;
 export let callerId = "";
 export let category = "";
-let globalNodes = new Set();
-let globalEdges = new Set();
-let processedNodes = new Set();
-let processedEdges = new Set();
+const globalNodes = new Set();
+const globalEdges = new Set();
+const processedNodes = new Set();
+const processedEdges = new Set();
 
 export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLabel) {
   callerId = id;
   category = cat;
 
-  globalNodes = new Set();
-  globalEdges = new Set();
-  processedNodes = new Set();
-  processedEdges = new Set();
+  globalNodes.clear();
+  globalEdges.clear();
+  processedNodes.clear();
+  processedEdges.clear();
 
   await renderLineageData(uri, iYear, conceptId, conceptLabel)
     .catch((error) => {
@@ -29,6 +29,8 @@ export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLa
 
   const nodes = Array.from(globalNodes).map(node => JSON.parse(node));
   const edges = Array.from(globalEdges).map(edge => JSON.parse(edge));
+  console.log("Nodes:", nodes);
+  console.log("Edges:", edges);
   return { nodes, edges };
 }
 
