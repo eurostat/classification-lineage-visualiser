@@ -1,6 +1,6 @@
 // File: getDataAndLoadSelect2.js
 import { queryBuilder } from './queryBuilder.js';
-import { fakeAjaxRequest as makeAjaxRequest } from './ajaxHelper.js';
+import { makeAjaxRequest } from './ajaxHelper.js';
 import { formatData } from './dataFormatter.js';
 import { initializeSelect2 } from './select2Helper.js';
 
