@@ -16,7 +16,7 @@ export function populateYearOptions(elementId, startYear, endYear, category) {
   // Add options for each year from startYear to endYear
   for (let year = startYear; year <= endYear; year++) {
     const option = document.createElement('option');
-    option.value = `<http://data.europa.eu/${path}/${category}${year}/>`;
+    option.value = `<http://data.europa.eu/${path}/>`;
     option.textContent = year;
     selectElement.appendChild(option);
   }
