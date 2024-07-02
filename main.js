@@ -1,15 +1,27 @@
-import { getConnectedNodeIds, getFilteredNodes } from "./data.js";
 import { getXScale, getYScale } from "./scales.js";
 import { positionNodes } from "./nodes.js";
 
 export function renderChart(graphData) {
 	const { nodes, edges } = graphData;
 
-	const svg = d3.select("#visualization"),
-		width = +svg.attr("width"),
-		height = +svg.attr("height");
-
+	// Calculate the maximum and minimum years from your nodes data
 	const years = Array.from(new Set(nodes.map((d) => d.year))).sort();
+	const minYear = d3.min(years);
+	const maxYear = d3.max(years);
+
+	// Calculate the maximum number of nodes in a single year
+	const maxNodesInYear = d3.max(
+		years.map((year) => nodes.filter((node) => node.year === year).length)
+	);
+
+	// Set the width and height of your SVG based on your data
+	const width = (maxYear - minYear + 1) * 350; // 350 pixels per year
+	const height = maxNodesInYear * 99; // 99 pixels per node
+
+	const svg = d3
+		.select("#visualization")
+		.attr("width", width)
+		.attr("height", height);
 
 	const xScale = getXScale(years, width);
 	const yScale = getYScale(nodes, height);
