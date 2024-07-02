@@ -71,9 +71,9 @@ $("#dataOptions").on("change", async function () {
 
 	let graphData;
 	if (selectedOption === "1") {
-		graphData = await composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2022, "846229100080", "8462 29 10");
+		graphData = await composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2022, "846229100080", "8462 29 10 year 2022");
 	} else if (selectedOption === "2") {
-		graphData = await composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2020/CN2020_CN2021", 2020, "190190990080", "1901 90 99");
+		graphData = await composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2020/CN2020_CN2021", 2020, "190190990080", "1901 90 99 year 2020");
 	}
 
 	renderChart(graphData);
