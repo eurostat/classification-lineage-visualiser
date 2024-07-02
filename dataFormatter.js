@@ -3,7 +3,7 @@ function formatDataCodes(data) {
   const formattedData = data.results.bindings.map(item => ({
     id: item.ID.value,
     text: `[${item.CODE.value}] ${item.LABEL.value}`,
-    label: item.CODE.value,
+    code: item.CODE.value,
   }));
 
   // Prepend an empty element to the array
