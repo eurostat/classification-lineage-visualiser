@@ -1,5 +1,5 @@
 // File: ajaxHelper.js
-export async function makeAjaxRequest(url, method, headers, data, onSuccess, onError, _, memo) {
+export async function makeAjaxRequest(url, method, headers, data, onSuccess, onError, memo) {
   if (method === "GET") {
     // Try to get the response from the cache
     const cache = await caches.open('classification-cache');

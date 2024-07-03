@@ -53,7 +53,7 @@ export async function fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, 
         $("#spinner").hide();
         reject(new Error(errorThrown)); // Reject promise with error
       },
-      callerId,`${conceptId}-${iYear}-${targetYear}`
+      `${conceptId}-${iYear}-${targetYear}`
     );
   });
 }

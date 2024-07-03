@@ -29,7 +29,6 @@ export function getDataAndLoadSelect2(callerId, category, uri, version) {
     function (jqXHR, textStatus, errorThrown) {
       console.error('Error executing query:', errorThrown);
       $('#spinner').hide();
-    },
-    callerId
+    }
   );
 }
