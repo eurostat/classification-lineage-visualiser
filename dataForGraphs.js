@@ -50,7 +50,6 @@ const requestQueue = new RequestQueue(5); // Limit to 5 concurrent requests
 
 async function renderGraphData(iUri, conceptId, conceptLabel, iYear, targetYear) {
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
-  console.log("Processing node:", nodeKey, iUri);
   if (processedNodes.has(nodeKey)) return; // Stop if node already processed
 
     const newTargets = await requestQueue.add(() => fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, targetYear));
@@ -58,7 +57,6 @@ async function renderGraphData(iUri, conceptId, conceptLabel, iYear, targetYear)
       // Mark the current node as processed before processing children
       processedNodes.add(nodeKey);
       const newPromises = newTargets.map((target) => {
-        console.log("New concept:", nodeKey, target.targetId, target.targetYear);
         return renderLineageData(iUri, target.targetYear, target.targetId, target.targetLabel);
       });
       await Promise.all(newPromises)
