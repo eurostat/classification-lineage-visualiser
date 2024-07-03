@@ -6,16 +6,12 @@ export function renderChart(graphData) {
 
 	// Calculate the maximum and minimum years from your nodes data
 	const years = Array.from(new Set(nodes.map((d) => d.year))).sort();
-	const minYear = d3.min(years);
-	const maxYear = d3.max(years);
-
-	// Calculate the maximum number of nodes in a single year
 	const maxNodesInYear = d3.max(
 		years.map((year) => nodes.filter((node) => node.year === year).length)
 	);
 
 	// Set the width and height of your SVG based on your data
-	const width = (maxYear - minYear + 1) * 350; // 350 pixels per year
+	const width = (years.length) * 350; // 350 pixels per year
 	const height = maxNodesInYear * 120; // 99 pixels per node
 
 	const svg = d3
