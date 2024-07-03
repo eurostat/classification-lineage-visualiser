@@ -48,10 +48,11 @@ export async function fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, 
           reject(new Error("Invalid JSON response"));
         }
       },
-      function (jqXHR, textStatus, errorThrown) {
-        console.error("AJAX request error:", textStatus, errorThrown, "Response text:", jqXHR.responseText, conceptRDFUri);
+      function (fetchError) {
+        console.error("AJAX request error:", conceptRDFUri);
         $("#spinner").hide();
-        reject(new Error(errorThrown)); // Reject promise with error
+        document.getElementById('errorContainer').innerText = fetchError;
+        reject(new Error(fetchError)); // Reject promise with error
       },
       `${conceptId}-${iYear}-${targetYear}`
     );

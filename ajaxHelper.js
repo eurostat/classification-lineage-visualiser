@@ -14,15 +14,22 @@ export async function makeAjaxRequest(url, method, headers, data, onSuccess, onE
         const response = await fetch(url, { headers });
         const contentType = response.headers.get("content-type");
         
-        // Only cache the response if it's JSON
         if (contentType && (contentType.includes("application/json") || contentType.includes("application/sparql-results+json"))) {
-					// Put the fetched response into the cache
-					cache.put(url, response.clone());
-				} else {
-					const responseText = await response.text();
-          console.warn("Response is not JSON:", memo, "Response text:", responseText);
-				}
-        onSuccess(await response.json());
+          const data = await response.json();
+          try {
+            cache.put(url, new Response(JSON.stringify(data), response));
+          } catch (cacheError) {
+            console.error('Caching failed:', cacheError);
+          }
+          onSuccess(data);
+        } else {
+          $("#spinner").hide();
+          const responseText = await response.text();
+          const errMessage = `Response is not JSON [ref: ${memo}]
+          Response text: ${responseText}`;
+          document.getElementById('errorContainer').innerText = errMessage;
+          throw new Error(errMessage); // Reject promise with error
+        }
       } catch (error) {
         onError(error);
       }
