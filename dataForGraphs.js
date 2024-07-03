@@ -24,10 +24,6 @@ export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLa
   processedEdges.clear();
 
   await renderLineageData(uri, iYear, conceptId, conceptLabel)
-    .catch((error) => {
-      console.error("Error:", error.message);
-      throw error; // Halting on error
-    });
 
   const nodes = Array.from(globalNodes).map(node => JSON.parse(node));
   const edges = Array.from(globalEdges).map(edge => JSON.parse(edge));
@@ -38,16 +34,11 @@ export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLa
 
 
 async function renderLineageData(iUri, iYear, conceptId, conceptLabel) {
-  const positiveUri = getYearComparisonURI(iUri, category, iYear, true);
-  const negativeUri = getYearComparisonURI(iUri, category, iYear, false);
+	const positiveUri = getYearComparisonURI(iUri, category, iYear, true);
+	const negativeUri = getYearComparisonURI(iUri, category, iYear, false);
 
-  try {
-    await renderGraphData(positiveUri, conceptId, conceptLabel, iYear, iYear + 1);
-    await renderGraphData(negativeUri, conceptId, conceptLabel, iYear, iYear - 1);
-  } catch (error) {
-    console.error("Error:", error.message);
-    throw error; // Halting on error
-  };
+	await renderGraphData(positiveUri, conceptId, conceptLabel, iYear, iYear + 1);
+	await renderGraphData(negativeUri, conceptId, conceptLabel, iYear, iYear - 1);
 }
 
 const requestQueue = new RequestQueue(5); // Limit to 5 concurrent requests
@@ -58,7 +49,6 @@ async function renderGraphData(iUri, conceptId, conceptLabel, iYear, targetYear)
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
   if (processedNodes.has(nodeKey)) return; // Stop if node already processed
 
-  try {
     const newTargets = await requestQueue.add(() => fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, targetYear));
     if (newTargets.length > 0) {
       // Mark the current node as processed before processing children
@@ -67,15 +57,8 @@ async function renderGraphData(iUri, conceptId, conceptLabel, iYear, targetYear)
         // console.log("New concept:", nodeKey, iUri);
         return renderLineageData(iUri, target.targetYear, target.targetId, target.targetLabel);
       });
-      await Promise.all(newPromises).catch((error) => {
-        console.error("Error:", error.message);
-        throw error; // Halting on error
-      }); // Wait until all promises are resolved
+      await Promise.all(newPromises)
     }
-  } catch (error) {
-    console.error("Error:", error.message);
-    throw error; // Halting on error
-  }
 }
 
 export function getTargets(data, conceptId, conceptLabel, iYear, targetYear) {
