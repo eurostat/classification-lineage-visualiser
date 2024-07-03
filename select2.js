@@ -23,6 +23,8 @@ $("#categories")
 	.on("select2:clear", function (e) {
 		$("#versions").empty().prop("disabled", true);
 		$("#concepts").empty().prop("disabled", true);
+		$("#submit-button").prop("disabled", true);
+		$("#errorContainer").empty();
 		$("#visualization").empty();
 	});
 
@@ -30,7 +32,9 @@ $("#versions")
 	.select2()
 	.on("select2:select", function (e) {
 		$("#concepts").empty().prop("disabled", true);
+		$("#submit-button").prop("disabled", true);
 		$("#visualization").empty();
+		$("#errorContainer").empty();
 
 		const version = e.params.data.id;
 		const category = $("#categories").val();
@@ -39,15 +43,22 @@ $("#versions")
 	})
 	.on("select2:clear", function (e) {
 		$("#concepts").empty().prop("disabled", true);
+		$("#submit-button").prop("disabled", true);
 		$("#visualization").empty();
+		$("#errorContainer").empty();
 	});
 
 $("#concepts").select2()
 	.on("select2:select", function (e) {
+		$("#submit-button").prop("disabled", false);
 		$("#visualization").empty();
+		$("#errorContainer").empty();
 	})
 
 $("#submit-button").on("click", async function () {
+	$("#visualization").empty();
+	$("#errorContainer").empty();
+
 	const category = $("#categories").val();
 	const baseYear = Number($("#versions").val());
 	const uri = $("#versions").select2("data")[0].data.uri;

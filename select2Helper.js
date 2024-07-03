@@ -44,6 +44,7 @@ export function createDevDropdown() {
     data: devData,
   }).on("select2:select", async function (e) {
     $("#visualization").empty();
+    $("#errorContainer").empty();
     const category = "cn";
     const uri = "http://data.europa.eu/xsp/xx/";
     const conceptId = e.params.data.data.id;
