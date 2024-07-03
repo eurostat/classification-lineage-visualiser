@@ -45,7 +45,7 @@ export function createDevDropdown() {
   }).on("select2:select", async function (e) {
     $("#visualization").empty();
     const category = "cn";
-    const uri = "http://data.europa.eu/xsp/cn2022/";
+    const uri = "http://data.europa.eu/xsp/xx/";
     const conceptId = e.params.data.data.id;
     const conceptLabel = e.params.data.data.code;
     const year = e.params.data.data.year;

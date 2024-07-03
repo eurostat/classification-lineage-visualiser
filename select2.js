@@ -51,12 +51,10 @@ $("#submit-button").on("click", async function () {
 	const category = $("#categories").val();
 	const baseYear = Number($("#versions").val());
 	const uri = $("#versions").select2("data")[0].data.uri;
-	// const baseUri = getYearComparisonURI(uri, category, baseYear);
 	const conceptId = $("#concepts").select2('data')[0].id;
 	const conceptLabel = $("#concepts").select2('data')[0].code;
 	
 	try {
-		// const graphData = await composeGraphData("concepts", category, baseUri, baseYear, conceptId, conceptLabel);
 		const graphData = await composeGraphData("concepts", category, uri, baseYear, conceptId, conceptLabel);
 		renderChart(graphData);
 	} catch (error) {
