@@ -11,7 +11,7 @@ export async function fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, 
   $("#spinner").show();
 
   // Data to be sent as query parameters
-  const data = { query: queryBuilder(callerId, category, conceptRDFUri, iYear) };
+  const data = { query: queryBuilder(callerId, category, conceptRDFUri, iYear, targetYear) };
   const queryParams = toQueryParams(data);
 
   return new Promise((resolve, reject) => {

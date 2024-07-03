@@ -3,9 +3,6 @@ import { RequestQueue } from "./ajaxHelper.js";
 import { fetchAndProcessData } from "./fetchAndProcessData.js";
 import { setNodesAndEdges } from "./nodesAndEdges.js";
 
-const maxYear = 2024;
-const minYear = 2017;
-
 export let callerId = "";
 export let category = "";
 
@@ -34,19 +31,26 @@ export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLa
 
 
 async function renderLineageData(iUri, iYear, conceptId, conceptLabel) {
-	const positiveUri = getYearComparisonURI(iUri, category, iYear, true);
-	const negativeUri = getYearComparisonURI(iUri, category, iYear, false);
-
-	await renderGraphData(positiveUri, conceptId, conceptLabel, iYear, iYear + 1);
-	await renderGraphData(negativeUri, conceptId, conceptLabel, iYear, iYear - 1);
+  let nextTargetYear = iYear + 1;
+  let pastTargetYear = iYear - 1;
+  if (category === "prodcom") {
+    if (iYear === 2019) {
+      nextTargetYear = nextTargetYear + 1;
+    } else if (iYear === 2021) {
+      pastTargetYear = pastTargetYear - 1;
+    }
+  }
+  const positiveUri = getYearComparisonURI(iUri, category, iYear, nextTargetYear);
+  const negativeUri = getYearComparisonURI(iUri, category, iYear, pastTargetYear);
+  await renderGraphData(positiveUri, conceptId, conceptLabel, iYear, nextTargetYear);
+  await renderGraphData(negativeUri, conceptId, conceptLabel, iYear, pastTargetYear);
 }
 
 const requestQueue = new RequestQueue(5); // Limit to 5 concurrent requests
 
 async function renderGraphData(iUri, conceptId, conceptLabel, iYear, targetYear) {
-  if (iYear < minYear || iYear > maxYear) return; // Stop recursion based on year bounds
-
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
+  console.log("Processing node:", nodeKey, iUri);
   if (processedNodes.has(nodeKey)) return; // Stop if node already processed
 
     const newTargets = await requestQueue.add(() => fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, targetYear));
@@ -54,7 +58,7 @@ async function renderGraphData(iUri, conceptId, conceptLabel, iYear, targetYear)
       // Mark the current node as processed before processing children
       processedNodes.add(nodeKey);
       const newPromises = newTargets.map((target) => {
-        // console.log("New concept:", nodeKey, iUri);
+        console.log("New concept:", nodeKey, target.targetId, target.targetYear);
         return renderLineageData(iUri, target.targetYear, target.targetId, target.targetLabel);
       });
       await Promise.all(newPromises)
