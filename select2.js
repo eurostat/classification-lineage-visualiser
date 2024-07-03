@@ -1,7 +1,6 @@
 import { getDataAndLoadSelect2 } from "./getDataAndLoadSelect2.js";
 import { composeGraphData } from "./dataForGraphs.js";
 import { renderChart } from "./main.js";
-import { getYearComparisonURI } from "./uriHelper.js";
 
 $("#categories")
 	.select2({
@@ -65,16 +64,3 @@ $("#submit-button").on("click", async function () {
 	}
 });
 
-$("#dataOptions").on("change", async function () {
-	$("#visualization").empty();
-	const selectedOption = $(this).val(); // get the selected option
-
-	let graphData;
-	if (selectedOption === "1") {
-		graphData = await composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2022/CN2022_CN2023", 2022, "846229100080", "8462 29 10 year 2022");
-	} else if (selectedOption === "2") {
-		graphData = await composeGraphData("concepts", "cn", "http://data.europa.eu/xsp/cn2020/CN2020_CN2021", 2020, "190190990080", "1901 90 99 year 2020");
-	}
-
-	renderChart(graphData);
-});
