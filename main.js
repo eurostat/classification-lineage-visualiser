@@ -25,7 +25,10 @@ export function renderChart(graphData) {
 	const nodeMap = positionNodes(years, nodes, xScale, yScale);
 
 	years.forEach((year) => {
-		const yearNodes = nodes.filter((node) => node.year === year);
+		const yearNodes = nodes
+			.filter((node) => node.year === year)
+			.sort((a, b) => a.label.localeCompare(b.label));  // Sort nodes by label
+
 		yearNodes.forEach((node, i) => {
 			node.x = xScale(year);
 			node.y = yScale(i + 1);
