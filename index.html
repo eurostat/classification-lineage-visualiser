@@ -7,9 +7,6 @@
   <title>classification Visualization</title>
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="spinner.css">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     .link {
       stroke: #666;
@@ -28,20 +25,35 @@
 
     .node text {
       fill: white;
-      font-size: 10px;
+      font-size: 14px;
       text-anchor: middle;
       dominant-baseline: central;
     }
 
     .year-label {
-      font-size: 12px;
+      font-size: 14px;
       font-weight: bold;
+    }
+
+    header {
+      background-color: lightblue;
+      padding: 5px;
+      position: fixed;
+      top: 0;
+      width: 98%;
+    }
+
+    #submit-button {
+      height: 28px;
+    }
+
+    main {
+      margin-top: 50px;  /* Adjust this value to match the height of your header */
     }
   </style>
 </head>
 
 <body>
-
   <header>
     <select name="categories" id="categories" style="width: 200px;">
       <option></option>
@@ -61,11 +73,13 @@
       <div class="loader"></div>
     </div>
 
-    <svg id="visualization" width="1000" height="2600"></svg>
+    <svg id="visualization"></svg>
   </main>
 
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="select2.js" type="module"></script>
-
 </body>
 
 </html>
