@@ -1,6 +1,6 @@
 import { getDataAndLoadSelect2 } from "./getDataAndLoadSelect2.js";
 import { composeGraphData } from "./dataForGraphs.js";
-import { renderChart } from "./main.js";
+import { renderChart } from "./renderChart.js";
 
 $("#categories")
 	.select2({

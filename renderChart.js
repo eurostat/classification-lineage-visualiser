@@ -1,18 +1,28 @@
-import { getXScale, getYScale } from "./scales.js";
 import { positionNodes } from "./nodes.js";
+import { getXScale } from "./scales.js";
+
+/**
+* Calculates unique years and the maximum number of nodes in any year.
+* Defines SVG dimensions based on these values.
+* Uses positionNodes to position nodes with consistent vertical padding.
+*/
 
 export function renderChart(graphData) {
 	const { nodes, edges } = graphData;
 
-	// Calculate the maximum and minimum years from your nodes data
+	// Calculate the years present in the data
 	const years = Array.from(new Set(nodes.map((d) => d.year))).sort();
+
+	// Calculate the maximum number of nodes in any single year
 	const maxNodesInYear = d3.max(
 		years.map((year) => nodes.filter((node) => node.year === year).length)
 	);
 
-	// Set the width and height of your SVG based on your data
-	const width = (years.length) * 350; // 350 pixels per year
-	const height = maxNodesInYear * 120; // 99 pixels per node
+	// Define the dimensions of the SVG
+	const width = years.length * 350; // 350 pixels per year
+	const fixedDistance = 60; // Fixed distance between nodes
+	const topOffset = 55; // Space for the top nodes to avoid collision with year titles
+	const height = (maxNodesInYear + 1) * fixedDistance + topOffset; // SVG height based on the maximum number of nodes in a year
 
 	const svg = d3
 		.select("#visualization")
@@ -20,21 +30,9 @@ export function renderChart(graphData) {
 		.attr("height", height);
 
 	const xScale = getXScale(years, width);
-	const yScale = getYScale(nodes, height);
 
-	const nodeMap = positionNodes(years, nodes, xScale, yScale);
-
-	years.forEach((year) => {
-		const yearNodes = nodes
-			.filter((node) => node.year === year)
-			.sort((a, b) => a.label.localeCompare(b.label));  // Sort nodes by label
-
-		yearNodes.forEach((node, i) => {
-			node.x = xScale(year);
-			node.y = yScale(i + 1);
-			nodeMap.set(node.id, node);
-		});
-	});
+	// Position the nodes with the fixed distance between them and the top offset
+	const nodeMap = positionNodes(nodes, xScale, fixedDistance, topOffset);
 
 	const link = svg
 		.append("g")

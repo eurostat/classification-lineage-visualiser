@@ -10,9 +10,12 @@ export function initializeSelect2(callerId, data) {
 }
 
 import { composeGraphData } from './dataForGraphs.js';
-import { renderChart } from './main.js';
+import { renderChart } from './renderChart.js';
 export function createDevDropdown() {
+
   const data = [
+    ["32502180", ["2019"]],
+    ["32502181", ["2024"]],
     ["854370900080", ["2018", "2022"]],
     ["382499920080", ["2018", "2022"]],
     ["760612200080", ["2019", "2022"]],
@@ -45,9 +48,11 @@ export function createDevDropdown() {
   }).on("select2:select", async function (e) {
     $("#visualization").empty();
     $("#errorContainer").empty();
-    const category = "cn";
-    const uri = "http://data.europa.eu/xsp/xx/";
+    
     const conceptId = e.params.data.data.id;
+    const category = conceptId === "32502180"? "prodcom":"cn";
+    const dom = category === "prodcom" ? "qw1" : "xsp";
+    const uri = "http://data.europa.eu/xsp/xx/";
     const conceptLabel = e.params.data.data.code;
     const year = e.params.data.data.year;
     const graphData = await composeGraphData("concepts", category, uri, (+year), conceptId, conceptLabel);
