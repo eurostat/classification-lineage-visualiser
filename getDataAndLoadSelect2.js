@@ -3,8 +3,9 @@ import { queryBuilder } from './queryBuilder.js';
 import { makeAjaxRequest } from './ajaxHelper.js';
 import { formatData } from './dataFormatter.js';
 import { initializeSelect2 } from './select2Helper.js';
-import { createDevDropdown } from './select2Helper.js';
-  createDevDropdown();
+import { createDevDropdown } from './createDevDropdown.js';
+
+createDevDropdown();
 
 export function getDataAndLoadSelect2(callerId, category, uri, version) {
   const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
