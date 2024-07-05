@@ -7,38 +7,7 @@ A front-end application to visualize the lineage of classification items over ti
 - The "concept" dropdown displays both the code and label for each concept.
 - This ensures that the user always selects a valid concept.
 ### Retrieve Data Over the Years
-- The application starts with the original version, which is defined by a specific year. It then iterates over available years, querying data for each year to show the evolution of the concept.
-### Look Around for ID
-- Based on the version selected by the user, the application sets a reference year.
-- The application first looks ahead by incrementing the reference year and querying data for each subsequent year.
-- Then, it looks behind by decrementing the reference year (subtracting 1 each time) and querying data for each previous year.
-
-## Logic Steps
-
-**Initialization:**
-
-* Start with a concept ID and year to find targets.
-
-**Data Fetching:**
-
-* Use AJAX to fetch targets for the given concept ID and year.
-* We are using Cache API for the development purposes.
-
-**Target Processing:**
-
-* Each AJAX request returns targets for the given concept ID and year.
-* Look for targets in both future and past years (2 calls per concept ID per year).
-* There can be 0 to N targets for each request.
-
-**Node and Edge Management:**
-
-* If a concept ID has targets, write the nodes and edges list.
-
-**Recursive Search:**
-
-* Perform a recursive search where each target ID becomes a new concept ID.
-    * Limits (max year, min year) are in place to avoid infinite recursion.
-* Iterate through all years until the limits are reached.
+- The application begins by displaying the selected concept for a specific year. It then retrieves target classifications (or data) from the correspondence tables. Finally, it iterates through the available targets, querying data for each year to visualize the evolution of the concept over time.
 
 
 ## Recent Development Overview
@@ -65,9 +34,3 @@ A front-end application to visualize the lineage of classification items over ti
 **Development Environment Setup:**
 
 * The development environment is configured, including a proxy to address CORS errors.
-
-**Version Control and Documentation:**
-
-* All development is tracked and managed using Git.
-* Continuous documentation is being maintained throughout the development process.
-
