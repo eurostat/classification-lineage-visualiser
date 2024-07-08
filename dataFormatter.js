@@ -13,14 +13,11 @@ function formatDataCodes(data) {
 }
 
 function formatDataVersions(data) {
-  const formattedData = data.results.bindings.map(item => ({
+  return data.results.bindings.map(item => ({
     id: item.VERSION.value,
     text: item.NOTATION.value,
     uri: item.URI.value,
   }));
-
-
-  return formattedData;
 }
 
 export function formatData(callerId, data) {
@@ -35,27 +32,23 @@ export function mergeVersionDataAndFormat(futureData, pastData) {
   const mergedData = [...futureData, ...pastData];
 
   const formattedData = mergedData.reduce((acc, item, index) => {
-    const existingItem = acc.find(x => x.id === item.id);
-    if (existingItem) {
-      if (index < futureData.length) {
-        existingItem.data.future= item.uri;
-      } else {
-        existingItem.data.past= item.uri;
-      }
-    } else {
-      const newItem = {
-				id: item.id,
-				text: item.text,
-				data: { future: "", past: "" },
-			};
+    let existingItem = acc.find(x => x.id === item.id);
 
-      if (index < futureData.length) {
-        newItem.data.future= item.uri;
-      } else {
-        newItem.data.past= item.uri;
-      }
-      acc.push(newItem);
+    if (!existingItem) {
+      existingItem = {
+        id: item.id,
+        text: item.text,
+        data: { futureURI: "", pastURI: "" },
+      };
+      acc.push(existingItem);
     }
+
+    if (index < futureData.length) {
+      existingItem.data.futureURI = item.uri;
+    } else {
+      existingItem.data.pastURI = item.uri;
+    }
+
     return acc;
   }, []);
 
