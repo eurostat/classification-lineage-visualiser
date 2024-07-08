@@ -2,7 +2,7 @@ import { getDataAndLoadSelect2 } from "./getDataAndLoadSelect2.js";
 import { composeGraphData } from "./dataForGraphs.js";
 import { renderChart } from "./renderChart.js";
 
-$("#categories")
+$("#families")
 	.select2({
 		placeholder: "Select an option",
 		allowClear: true,
@@ -17,8 +17,8 @@ $("#categories")
 		$("#concepts").empty().prop("disabled", true);
 		$("#visualization").empty();
 
-		const category = e.params.data.id;
-		getDataAndLoadSelect2(e.target.id, category, category);
+		const family = e.params.data.id;
+		getDataAndLoadSelect2(e.target.id, family);
 	})
 	.on("select2:clear", function (e) {
 		$("#versions").empty().prop("disabled", true);
@@ -37,9 +37,13 @@ $("#versions")
 		$("#errorContainer").empty();
 
 		const version = e.params.data.id;
-		const category = $("#categories").val();
-		const uri = e.params.data.data.uri;
-		getDataAndLoadSelect2(e.target.id, category, uri, version);
+		const family = $("#families").val();
+		const futureURI = e.params.data.data.futureURI;
+		const pastURI = e.params.data.data.pastURI;
+		console.log("Future URI:", futureURI);
+		console.log("Past URI:", pastURI);
+
+		getDataAndLoadSelect2(e.target.id, family, futureURI || pastURI, version);
 	})
 	.on("select2:clear", function (e) {
 		$("#concepts").empty().prop("disabled", true);
@@ -59,14 +63,17 @@ $("#submit-button").on("click", async function () {
 	$("#visualization").empty();
 	$("#errorContainer").empty();
 
-	const category = $("#categories").val();
+	const family = $("#families").val();
 	const baseYear = Number($("#versions").val());
-	const uri = $("#versions").select2("data")[0].data.uri;
+	const futureURI = $("#versions").select2("data")[0].data.futureURI;
+	const pastURI = $("#versions").select2("data")[0].data.pastURI;
+	console.log("Future URI:", futureURI);
+	console.log("Past URI:", pastURI);
 	const conceptId = $("#concepts").select2('data')[0].id;
 	const conceptLabel = $("#concepts").select2('data')[0].code;
 	
 	try {
-		const graphData = await composeGraphData("concepts", category, uri, baseYear, conceptId, conceptLabel);
+		const graphData = await composeGraphData("concepts", family, futureURI, baseYear, conceptId, conceptLabel);
 		renderChart(graphData);
 	} catch (error) {
 		console.error("Error:", error.message);

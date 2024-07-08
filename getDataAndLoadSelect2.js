@@ -7,33 +7,49 @@ import { createDevDropdown } from './createDevDropdown.js';
 
 createDevDropdown();
 
-export async function getDataAndLoadSelect2(callerId, category, uri, version) {
-  const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
-  const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
+export function getDataAndLoadSelect2( callerId, family, correspondences, version) {
+	const proxy = "https://cors-anywhere.herokuapp.com/";
+	const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
+	const endpointURL = `${proxy}${sparqlEndpoint}`;
 
-  const { future, past } = queryBuilder(callerId, category, uri, version);
+	if (callerId === "families") {
+    
+		$("#spinner").show();
+		const { future, past } = queryBuilder( callerId, family, endpointURL, version);
+		getVersions(callerId, past, future, endpointURL);
 
-  $('#spinner').show();
+	} else if (callerId === "versions") {
+
+		const query = queryBuilder(callerId, family, correspondences, version);
+		getConceptIDs(callerId, query, endpointURL);
+
+	}
+}
+
+async function getVersions(callerId, past, future, sparqlEndpoint) {
 
   const futureData = new Promise((resolve, reject) => {
     makeAjaxRequest(
-      `${corsAnywhereUrl}${sparqlEndpoint}?query=${encodeURIComponent(future)}`,
+      `${sparqlEndpoint}?query=${encodeURIComponent(future)}`,
       'GET',
       { 'Accept': 'application/sparql-results+json' },
       null,
       resolve,
-      reject
+      reject,
+      "future"
+    
     );
   });
 
   const pastData = new Promise((resolve, reject) => {
     makeAjaxRequest(
-      `${corsAnywhereUrl}${sparqlEndpoint}?query=${encodeURIComponent(past)}`,
+      `${sparqlEndpoint}?query=${encodeURIComponent(past)}`,
       'GET',
       { 'Accept': 'application/sparql-results+json' },
       null,
       resolve,
-      reject
+      reject,
+      "past"
     );
   });
 
@@ -50,4 +66,32 @@ export async function getDataAndLoadSelect2(callerId, category, uri, version) {
   } finally {
     $('#spinner').hide();
   }
+}
+
+export function getConceptIDs(callerId, query, endpointURL) {
+  const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
+  const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
+
+
+  $('#spinner').show();
+
+  makeAjaxRequest(
+    `${endpointURL}?query=${encodeURIComponent(query)}`,
+    'GET',
+    {
+      'Accept': 'application/sparql-results+json',
+    },
+    null,
+    function (data) {
+      const formattedData = formatData(callerId, data);
+      initializeSelect2(callerId, formattedData);
+      $('#spinner').hide();
+    },
+    function (jqXHR, textStatus, errorThrown) {
+      console.error('Error executing query:', errorThrown);
+      $('#spinner').hide();
+    },
+    callerId
+  
+  );
 }

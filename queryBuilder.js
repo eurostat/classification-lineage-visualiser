@@ -1,5 +1,4 @@
 function queryForConceptId(family, uri, version) {
-  console.log("Category:", family, "URI:", uri, "Version:", version);
   const uriParts = uri.split('/');
   uriParts.pop();
   const newUri = uriParts.join('/') + '/';
