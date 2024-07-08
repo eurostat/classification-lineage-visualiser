@@ -8,13 +8,15 @@ import { createDevDropdown } from './createDevDropdown.js';
 createDevDropdown();
 
 export function getDataAndLoadSelect2( callerId, family, correspondences, version) {
+  
 	const proxy = "https://cors-anywhere.herokuapp.com/";
 	const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
 	const endpointURL = `${proxy}${sparqlEndpoint}`;
+  
+  $("#spinner").show();
 
 	if (callerId === "families") {
     
-		$("#spinner").show();
 		const { future, past } = queryBuilder( callerId, family, endpointURL, version);
 		getVersions(callerId, past, future, endpointURL);
 
@@ -69,12 +71,6 @@ async function getVersions(callerId, past, future, sparqlEndpoint) {
 }
 
 export function getConceptIDs(callerId, query, endpointURL) {
-  const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
-  const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
-
-
-  $('#spinner').show();
-
   makeAjaxRequest(
     `${endpointURL}?query=${encodeURIComponent(query)}`,
     'GET',
