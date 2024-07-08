@@ -1,4 +1,5 @@
-function queryForCodeId(category, uri, version) {
+function queryForConceptId(family, uri, version) {
+  console.log("Category:", family, "URI:", uri, "Version:", version);
   const uriParts = uri.split('/');
   uriParts.pop();
   const newUri = uriParts.join('/') + '/';
@@ -13,7 +14,7 @@ function queryForCodeId(category, uri, version) {
 
     SELECT ?ID ?CODE ?LABEL WHERE { 
         ?s a skos:Concept;
-            skos:inScheme :${category}${version};
+            skos:inScheme :${family}${version};
             dc:identifier ?ID;
             skos:notation ?CODE;
             skos:altLabel ?LABEL.
@@ -22,7 +23,7 @@ function queryForCodeId(category, uri, version) {
 `;
 }
 
-function futureCorrespondenceQuery(category){
+function futureCorrespondenceQuery(family){
   return `
   PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
   PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -33,11 +34,11 @@ function futureCorrespondenceQuery(category){
   WHERE { 
     ?currentURI a skos:ConceptScheme ;
         skos:notation ?NOTATION;
-        xkos:belongsTo <http://data.europa.eu/2en/class-series/${category}>;
+        xkos:belongsTo <http://data.europa.eu/2en/class-series/${family}>;
         owl:versionInfo ?VERSION.
     
     ?FollowingURI a skos:ConceptScheme ;
-        xkos:belongsTo <http://data.europa.eu/2en/class-series/${category}>;
+        xkos:belongsTo <http://data.europa.eu/2en/class-series/${family}>;
         xkos:follows ?currentURI.
     
     ?URI xkos:compares ?currentURI;
@@ -50,7 +51,7 @@ function futureCorrespondenceQuery(category){
 `
 }
 
-function pastCorrespondenceQuery(category){
+function pastCorrespondenceQuery(family){
   return `
   PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
   PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -61,11 +62,11 @@ function pastCorrespondenceQuery(category){
   WHERE { 
     ?pastURI a skos:ConceptScheme ;
         skos:notation ?pastNotation;
-        xkos:belongsTo <http://data.europa.eu/2en/class-series/${category}>;
+        xkos:belongsTo <http://data.europa.eu/2en/class-series/${family}>;
         owl:versionInfo ?pastVersion.
     
     ?currentURI a skos:ConceptScheme ;
-        xkos:belongsTo <http://data.europa.eu/2en/class-series/${category}>;
+        xkos:belongsTo <http://data.europa.eu/2en/class-series/${family}>;
         xkos:follows ?pastURI.
 
     ?URI xkos:compares ?currentURI;
@@ -99,11 +100,11 @@ function queryForTargets(uri){
   `
 }
 
-export function queryBuilder(callerId, category, uri, year) {
+export function queryBuilder(callerId, family, uri, year) {
 	if (callerId === "versions") {
-		return queryForCodeId(category, uri, year);
-	} else if (callerId === "categories") {
-    return {future: futureCorrespondenceQuery(category), past: pastCorrespondenceQuery(category)};
+		return queryForConceptId(family, uri, year);
+	} else if (callerId === "families") {
+    return {future: futureCorrespondenceQuery(family), past: pastCorrespondenceQuery(family)};
 	} else if (callerId === "concepts") {
     return queryForTargets(uri);
   }

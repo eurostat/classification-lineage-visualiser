@@ -23,7 +23,7 @@ function formatDataVersions(data) {
 export function formatData(callerId, data) {
   if (callerId === 'versions') {
     return formatDataCodes(data);
-  } else if (callerId === 'categories') {
+  } else if (callerId === 'families') {
     return formatDataVersions(data);
   }
 }

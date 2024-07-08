@@ -1,13 +1,13 @@
-export function getYearComparisonURI(baseUri, category, iYear, targetYear) {
+export function getYearComparisonURI(baseUri, family, iYear, targetYear) {
 
 	const urlParts = new URL(baseUri);
 	const { pathname } = urlParts;
 	const path = pathname.split('/');
 
-	const lowerCaseCategory = category.toLowerCase();
+	const lowerCaseCategory = family.toLowerCase();
 	path[path.length - 2] = `${lowerCaseCategory}${iYear}`;
 
-	const upperCaseCategory = category.toUpperCase();
+	const upperCaseCategory = family.toUpperCase();
 	path[path.length - 1] = `${upperCaseCategory}${iYear}_${upperCaseCategory}${targetYear}`;
 
 	urlParts.pathname = path.join('/');

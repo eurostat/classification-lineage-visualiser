@@ -4,16 +4,16 @@ import { fetchAndProcessData } from "./fetchAndProcessData.js";
 import { setNodesAndEdges } from "./nodesAndEdges.js";
 
 export let callerId = "";
-export let category = "";
+export let family = "";
 
 const globalNodes = new Set();
 const globalEdges = new Set();
 const processedNodes = new Set();
 const processedEdges = new Set();
 
-export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLabel) {
+export async function composeGraphData(id, kin, uri, iYear, conceptId, conceptLabel) {
   callerId = id;
-  category = cat;
+  family = kin;
 
   globalNodes.clear();
   globalEdges.clear();
@@ -33,15 +33,15 @@ export async function composeGraphData(id, cat, uri, iYear, conceptId, conceptLa
 async function renderLineageData(iUri, iYear, conceptId, conceptLabel) {
   let nextTargetYear = iYear + 1;
   let pastTargetYear = iYear - 1;
-  if (category === "prodcom") {
+  if (family === "prodcom") {
     if (iYear === 2019) {
       nextTargetYear = nextTargetYear + 1;
     } else if (iYear === 2021) {
       pastTargetYear = pastTargetYear - 1;
     }
   }
-  const positiveUri = getYearComparisonURI(iUri, category, iYear, nextTargetYear);
-  const negativeUri = getYearComparisonURI(iUri, category, iYear, pastTargetYear);
+  const positiveUri = getYearComparisonURI(iUri, family, iYear, nextTargetYear);
+  const negativeUri = getYearComparisonURI(iUri, family, iYear, pastTargetYear);
   await renderGraphData(positiveUri, conceptId, conceptLabel, iYear, nextTargetYear);
   await renderGraphData(negativeUri, conceptId, conceptLabel, iYear, pastTargetYear);
 }
