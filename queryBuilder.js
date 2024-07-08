@@ -1,4 +1,4 @@
-function queryBuilderForCodeId(category, uri, version) {
+function queryForCodeId(category, uri, version) {
   const uriParts = uri.split('/');
   uriParts.pop();
   const newUri = uriParts.join('/') + '/';
@@ -22,28 +22,66 @@ function queryBuilderForCodeId(category, uri, version) {
 `;
 }
 
-function queryBuilderForVersion(category) {
-	return `
+function futureCorrespondenceQuery(category){
+  return `
+  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
   PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-  PREFIX dct: <http://purl.org/dc/terms/>
   PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
   PREFIX owl: <http://www.w3.org/2002/07/owl#>
 
-  SELECT DISTINCT ?URI ?NOTATION ?VERSION
+  SELECT DISTINCT ?NOTATION ?VERSION ?URI
   WHERE { 
-    ?URI a skos:ConceptScheme ;
-        skos:prefLabel ?Title ;
-        dct:creator <http://publications.europa.eu/resource/authority/corporate-body/ESTAT> ;
-        skos:notation ?NOTATION ;
-        xkos:belongsTo ?classFamily ;
+    ?currentURI a skos:ConceptScheme ;
+        skos:notation ?NOTATION;
+        xkos:belongsTo <http://data.europa.eu/2en/class-series/${category}>;
         owl:versionInfo ?VERSION.
-    FILTER (regex(?NOTATION, "${category.toUpperCase()}.*") && regex(?VERSION, "\\\\d{4}"))
+    
+    ?FollowingURI a skos:ConceptScheme ;
+        xkos:belongsTo <http://data.europa.eu/2en/class-series/${category}>;
+        xkos:follows ?currentURI.
+    
+    ?URI xkos:compares ?currentURI;
+        xkos:compares ?FollowingURI;
+        xkos:madeOf ?Association.
+        
+        ?Association xkos:sourceConcept ?Concept.
+        ?Concept skos:inScheme ?currentURI.
   }
-  ORDER BY DESC(?VERSION)
-`;
+`
 }
 
-function queryBuilderForGraphs(uri){
+function pastCorrespondenceQuery(category){
+  return `
+  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+  PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+  PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
+  PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+  SELECT DISTINCT ?NOTATION ?VERSION ?URI
+  WHERE { 
+    ?pastURI a skos:ConceptScheme ;
+        skos:notation ?pastNotation;
+        xkos:belongsTo <http://data.europa.eu/2en/class-series/${category}>;
+        owl:versionInfo ?pastVersion.
+    
+    ?currentURI a skos:ConceptScheme ;
+        xkos:belongsTo <http://data.europa.eu/2en/class-series/${category}>;
+        xkos:follows ?pastURI.
+
+    ?URI xkos:compares ?currentURI;
+        xkos:compares ?pastURI;
+        xkos:madeOf ?Association.
+        
+    ?currentURI skos:notation ?NOTATION;
+        owl:versionInfo ?VERSION.
+
+    ?Association xkos:sourceConcept ?Concept.
+    ?Concept skos:inScheme ?currentURI.
+  }
+ `
+}
+
+function queryForTargets(uri){
   return`
     PREFIX ns2: <http://rdf-vocabulary.ddialliance.org/xkos#>
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -63,10 +101,10 @@ function queryBuilderForGraphs(uri){
 
 export function queryBuilder(callerId, category, uri, year) {
 	if (callerId === "versions") {
-		return queryBuilderForCodeId(category, uri, year);
+		return queryForCodeId(category, uri, year);
 	} else if (callerId === "categories") {
-		return queryBuilderForVersion(category);
+    return {future: futureCorrespondenceQuery(category), past: pastCorrespondenceQuery(category)};
 	} else if (callerId === "concepts") {
-    return queryBuilderForGraphs(uri);
+    return queryForTargets(uri);
   }
 }
