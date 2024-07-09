@@ -52,6 +52,9 @@ export function mergeVersionDataAndFormat(futureData, pastData) {
     return acc;
   }, []);
 
+  // sort the array by id
+  formattedData.sort((a, b) => a.id - b.id);
+
   // Prepend an empty element to the array
   formattedData.unshift({ id: "", text: "" });
 
