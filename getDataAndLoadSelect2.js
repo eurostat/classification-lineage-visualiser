@@ -62,7 +62,20 @@ async function getVersions(callerId, past, future, sparqlEndpoint) {
 
     const mergedData = mergeVersionDataAndFormat(formattedFutureData, formattedPastData);
 
-    initializeSelect2(callerId, mergedData);
+    initializeSelect2(callerId, mergedData); // load merged data into select2
+    
+    // load merged data to the session storage
+    const storageDta = mergedData
+    .filter((item) => item.id !== "")
+    .map((item) => {
+      return  {
+        id: item.id,
+        pastURI: item.data.pastURI,
+        futureURI: item.data.futureURI,
+      };
+    });
+    sessionStorage.setItem('correspondence-table', JSON.stringify(storageDta));
+    
   } catch (error) {
     console.error('Error executing query:', error);
   } finally {
