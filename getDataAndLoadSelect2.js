@@ -1,7 +1,7 @@
 // File: getDataAndLoadSelect2.js
 import { queryBuilder } from './queryBuilder.js';
 import { makeAjaxRequest } from './ajaxHelper.js';
-import { formatData, mergeVersionDataAndFormat } from './dataFormatter.js';
+import { formatData } from './dataFormatter.js';
 import { initializeSelect2 } from './select2Helper.js';
 import { createDevDropdown } from './createDevDropdown.js';
 
@@ -16,70 +16,46 @@ export function getDataAndLoadSelect2( callerId, family, correspondences, versio
   $("#spinner").show();
 
 	if (callerId === "families") {
-    
-		const { future, past } = queryBuilder( callerId, family, endpointURL, version);
-		getVersions(callerId, past, future, endpointURL);
-
+    const query = queryBuilder(callerId, family);
+		getVersion(callerId, query, endpointURL);
 	} else if (callerId === "versions") {
-
 		const query = queryBuilder(callerId, family, correspondences, version);
 		getConceptIDs(callerId, query, endpointURL);
 
 	}
 }
 
-async function getVersions(callerId, past, future, sparqlEndpoint) {
-
-  const futureData = new Promise((resolve, reject) => {
-    makeAjaxRequest(
-      `${sparqlEndpoint}?query=${encodeURIComponent(future)}`,
-      'GET',
-      { 'Accept': 'application/sparql-results+json' },
-      null,
-      resolve,
-      reject,
-      "future"
-    
-    );
-  });
-
-  const pastData = new Promise((resolve, reject) => {
-    makeAjaxRequest(
-      `${sparqlEndpoint}?query=${encodeURIComponent(past)}`,
-      'GET',
-      { 'Accept': 'application/sparql-results+json' },
-      null,
-      resolve,
-      reject,
-      "past"
-    );
-  });
-
+async function getVersion(callerId, query, sparqlEndpoint) {
+  $("#spinner").show(); // Ensure spinner is shown at the start
   try {
-    const [futureResponse, pastResponse] = await Promise.all([futureData, pastData]);
-    const formattedFutureData = formatData(callerId, futureResponse);
-    const formattedPastData = formatData(callerId, pastResponse);
+	const futureResponse = await new Promise((resolve, reject) => {
+	  makeAjaxRequest(
+		`${sparqlEndpoint}?query=${encodeURIComponent(query)}`,
+		"GET",
+		{ Accept: "application/sparql-results+json" },
+		null,
+		(response) => resolve(response), 
+		(error) => reject(error), 
+		"future"
+	  );
+	});
 
-    const mergedData = mergeVersionDataAndFormat(formattedFutureData, formattedPastData);
+	const formattedData = formatData(callerId, futureResponse); // Assuming formatData can handle JSON object
 
-    initializeSelect2(callerId, mergedData); // load merged data into select2
-    
-    // load merged data to the session storage
-    const storageDta = mergedData
-    .filter((item) => item.id !== "")
-    .map((item) => {
-      return  {
-        id: item.id,
-        pastURI: item.data.pastURI,
-        futureURI: item.data.futureURI,
-      };
-    });
-    sessionStorage.setItem('correspondence-table', JSON.stringify(storageDta));
-    
+	initializeSelect2(callerId, formattedData); // Load formatted data into select2
+
+	// Simplify data transformation if only restructuring
+	const storageData = formattedData.map(item => ({
+	  thisYear: item.id,
+	  nextYear: item.data.nextYear,
+	  comparison: item.data.comparison,
+	})).filter(item => item.thisYear !== ""); // Filter after mapping to simplify
+
+	sessionStorage.setItem("correspondence-table", JSON.stringify(storageData));
   } catch (error) {
-    console.error('Error executing query:', error);
+	console.error("Error executing query:", error);
   } finally {
-    $('#spinner').hide();
+	$("#spinner").hide(); // Ensure spinner is hidden at the end
   }
 }
 

@@ -22,64 +22,41 @@ function queryForConceptId(family, uri, version) {
 `;
 }
 
-function futureCorrespondenceQuery(family){
+function correspondenceQuery(family){
   return `
-  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-  PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-  PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
-  PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
 
-  SELECT DISTINCT ?NOTATION ?VERSION ?URI
-  WHERE { 
-    ?currentURI a skos:ConceptScheme ;
-        skos:notation ?NOTATION;
-        xkos:belongsTo <http://data.europa.eu/2en/class-series/${family}>;
-        owl:versionInfo ?VERSION.
-    
-    ?FollowingURI a skos:ConceptScheme ;
-        xkos:belongsTo <http://data.europa.eu/2en/class-series/${family}>;
-        xkos:follows ?currentURI.
-    
-    ?URI xkos:compares ?currentURI;
-        xkos:compares ?FollowingURI;
-        xkos:madeOf ?Association.
-        
-        ?Association xkos:sourceConcept ?Concept.
-        ?Concept skos:inScheme ?currentURI.
+SELECT DISTINCT ?thisNotation ?thisYear ?nextYear ?comparison
+WHERE { 
+  ?currentURI a skos:ConceptScheme ;
+              skos:notation ?thisNotation ;
+              xkos:belongsTo ?classSeries ;
+              owl:versionInfo ?thisYear .
+  
+  ?FollowingURI a skos:ConceptScheme ;
+                xkos:belongsTo ?classSeries ;
+                xkos:follows ?currentURI .
+  
+  ?comparison xkos:compares ?currentURI ;
+       xkos:compares ?FollowingURI ;
+       xkos:madeOf ?Association .
+  
+  ?Association xkos:sourceConcept ?Concept .
+  ?Concept skos:inScheme ?currentURI .
+  ?FollowingURI owl:versionInfo ?nextYear .
+  
+  VALUES ?classSeries { 
+    <http://data.europa.eu/2en/class-series/${family}> 
+    <http://data.europa.eu/2en/classification-series/${family}> 
   }
+}
+ORDER BY DESC(?thisYear)
 `
 }
 
-function pastCorrespondenceQuery(family){
-  return `
-  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-  PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-  PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
-  PREFIX owl: <http://www.w3.org/2002/07/owl#>
-
-  SELECT DISTINCT ?NOTATION ?VERSION ?URI
-  WHERE { 
-    ?pastURI a skos:ConceptScheme ;
-        skos:notation ?pastNotation;
-        xkos:belongsTo <http://data.europa.eu/2en/class-series/${family}>;
-        owl:versionInfo ?pastVersion.
-    
-    ?currentURI a skos:ConceptScheme ;
-        xkos:belongsTo <http://data.europa.eu/2en/class-series/${family}>;
-        xkos:follows ?pastURI.
-
-    ?URI xkos:compares ?currentURI;
-        xkos:compares ?pastURI;
-        xkos:madeOf ?Association.
-        
-    ?currentURI skos:notation ?NOTATION;
-        owl:versionInfo ?VERSION.
-
-    ?Association xkos:sourceConcept ?Concept.
-    ?Concept skos:inScheme ?currentURI.
-  }
- `
-}
 
 function queryForTargets(uri){
   return`
@@ -103,7 +80,7 @@ export function queryBuilder(callerId, family, uri, year) {
 	if (callerId === "versions") {
 		return queryForConceptId(family, uri, year);
 	} else if (callerId === "families") {
-    return {future: futureCorrespondenceQuery(family), past: pastCorrespondenceQuery(family)};
+    return correspondenceQuery(family);
 	} else if (callerId === "concepts") {
     return queryForTargets(uri);
   }
