@@ -13,11 +13,23 @@ function formatDataCodes(data) {
 }
 
 function formatDataVersions(data) {
-  return data.results.bindings.map(item => ({
-    id: item.thisYear.value,
-    text: item.thisNotation.value,
-    data: { correspUri: item.correspondenceUri.value, nextYear: item.nextYear.value },
-  }));
+  data.results.bindings.forEach(item => {
+      console.log(
+				item.thisYear.value,
+				item.correspondenceUri?.value ?? "No correspondence URI",
+			);
+  });
+  return data.results.bindings
+    .filter((item) => /^\d{4}$/.test(item.thisYear.value))
+    .map((item) => ({
+      id: item.thisYear.value,
+      text: item.thisNotation.value,
+      data: {
+        correspUri: item.correspondenceUri?.value ?? "",
+        nextYear: item.nextYear?.value ?? "",
+        pastYear: item.pastYear?.value ?? "",
+      },
+    }))
 }
 
 export function formatData(callerId, data) {
