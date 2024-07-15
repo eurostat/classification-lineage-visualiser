@@ -20,127 +20,107 @@ export async function composeGraphData(id, kin, iYear, conceptId, conceptLabel) 
   processedNodes.clear();
   processedEdges.clear();
 
+  await renderLineageData(iYear, conceptId, conceptLabel);
 
-  await renderLineageData(iYear, conceptId, conceptLabel)
-
-  const nodes = Array.from(globalNodes).map(node => JSON.parse(node));
-  const edges = Array.from(globalEdges).map(edge => JSON.parse(edge));
+  const nodes = Array.from(globalNodes).map(JSON.parse);
+  const edges = Array.from(globalEdges).map(JSON.parse);
+  
   console.log("Nodes:", nodes);
   console.log("Edges:", edges);
+  
   return { nodes, edges };
 }
 
-// Processes forward lineage
-async function processForwardLineage(iYear, conceptId, conceptLabel) {
-  const correspondenceTableData = await getCorrespondenceTable();
-  const targetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
-  if (!targetItem) return; // Stop if no target item found
-
-  const { nextYear: forwardYear, correspUri: correspondenceUrl} = targetItem;
-
-  // Process forward lineage
-  if (forwardYear) {
-    await renderGraphData(correspondenceUrl, conceptId, conceptLabel, iYear, forwardYear);
-  }
-}
-
-// Processes backward lineage
-async function processBackwardLineage(iYear, conceptId) {
-  const correspondenceTableData = await getCorrespondenceTable();
-  const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
-  if (!pastTargetItem) return; // Additional check if pastYear data is missing
-
-  console.log("Past target item:", pastTargetItem);
-
-  const { correspUri, pastYear } = pastTargetItem;
-  await renderBackwardGraphData(correspUri, conceptId, iYear, pastYear);
-}
-
-// Main function to render lineage data
+// Fetch and process lineage data
 async function renderLineageData(iYear, conceptId, conceptLabel) {
   const correspondenceTableData = await getCorrespondenceTable();
   const targetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
-  if (!targetItem) return; // Stop if no target item found
+  if (!targetItem) return;
 
   const { nextYear: forwardYear, correspUri, pastYear } = targetItem;
 
-  // Process forward lineage
   if (forwardYear) {
     await renderGraphData(correspUri, conceptId, conceptLabel, iYear, forwardYear);
   }
-  
-  // Process backward lineage
+
   if (pastYear) {
     const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === pastYear);
-    if (!pastTargetItem) return; // Additional check if pastYear data is missing
-
-    console.log("Past target item:", pastTargetItem);
-
-    const { correspUri: pastCorrespondenceUrl } = pastTargetItem;
-    await renderBackwardGraphData(pastCorrespondenceUrl, conceptId, iYear, pastYear);
+    if (pastTargetItem) {
+      const { correspUri: pastCorrespondenceUrl } = pastTargetItem;
+      await renderBackwardGraphData(pastCorrespondenceUrl, conceptId, iYear, pastYear);
+    }
   }
 }
 
-
-const requestQueue = new RequestQueue(5); // Limit to 5 concurrent requests
+const requestQueue = new RequestQueue(5);
 
 async function renderGraphData(correspondenceUri, conceptId, conceptLabel, iYear, targetYear) {
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
-  console.log(`Processing node: ${nodeKey}`);
-  if (processedNodes.has(nodeKey)) return; // Stop if node already processed
+  if (processedNodes.has(nodeKey)) return;
 
-    const conceptRDFUri = `${correspondenceUri}_${conceptId}`;
-    const newTargets = await requestQueue.add(() => fetchAndProcessData(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear));
-    if (newTargets.length > 0) {
-      // Mark the current node as processed before processing children
-      processedNodes.add(nodeKey);
-      const newPromises = newTargets.map((target) => {
-        return processForwardLineage(parseInt(target.targetYear), target.targetId, target.targetLabel);
-      });
-      await Promise.all(newPromises)
-    }
+  const conceptRDFUri = `${correspondenceUri}_${conceptId}`;
+  const newTargets = await requestQueue.add(() => fetchAndProcessData(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear));
+  if (newTargets.length > 0) {
+    processedNodes.add(nodeKey);
+    await Promise.all(newTargets.map(target => processForwardLineage(parseInt(target.targetYear), target.targetId, target.targetLabel)));
+  }
 }
 
 async function renderBackwardGraphData(correspondenceUri, conceptId, iYear, targetYear) {
-  const nodeKey = `${conceptId}-${iYear}-${targetYear}`; //FIXME: check if this should be same as forward node key
-  console.log(`FIXME? Processing backward node: ${nodeKey}`, correspondenceUri);
-  if (processedNodes.has(nodeKey)) return; // Stop if node already processed
+  const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
+  if (processedNodes.has(nodeKey)) return;
 
   const newSources = await requestQueue.add(() => fetchAndProcessData(correspondenceUri, conceptId, '', iYear, targetYear));
   if (newSources.length > 0) {
-    // Mark the current node as processed before processing parents
-    console.log(newSources);
-    const newPromises = newSources.map((source) => {
-      return processBackwardLineage(parseInt(source.sourceYear), source.sourceId);
-    });
-    await Promise.all(newPromises)
+    processedNodes.add(nodeKey);
+    await Promise.all(newSources.map(source => processForwardLineage(parseInt(source.sourceYear), source.sourceId, source.sourceLabel)));
+    await Promise.all(newSources.map(source => processBackwardLineage(parseInt(source.sourceYear), source.sourceId)));
+  }
+}
+
+async function processForwardLineage(iYear, conceptId, conceptLabel) {
+  const correspondenceTableData = await getCorrespondenceTable();
+  const targetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
+  if (!targetItem) return;
+
+  const { nextYear: forwardYear, correspUri } = targetItem;
+  if (forwardYear) {
+    await renderGraphData(correspUri, conceptId, conceptLabel, iYear, forwardYear);
+  }
+}
+
+async function processBackwardLineage(iYear, conceptId) {
+  const correspondenceTableData = await getCorrespondenceTable();
+  const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
+  if (!pastTargetItem) return;
+
+  const { correspUri, pastYear } = pastTargetItem;
+  if (pastYear) {
+    await renderBackwardGraphData(correspUri, conceptId, iYear, pastYear);
   }
 }
 
 export function getTargets(data, conceptId, conceptLabel, iYear, targetYear) {
   const isBackward = iYear > targetYear;
   const bindings = data.results.bindings;
+  const targets = isBackward ? getBackwardTargets(bindings, targetYear) : getForwardTargets(bindings, conceptId, conceptLabel, iYear, targetYear);
 
-  if (isBackward) {
-    return getBackwardTargets(bindings, targetYear) 
-  }
+  return targets;
+}
 
-  const result = setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedNodes, processedEdges, isBackward);
-
+function getForwardTargets(bindings, conceptId, conceptLabel, iYear, targetYear) {
+  const result = setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedNodes, processedEdges, false);
+  
   result.nodes.forEach(node => globalNodes.add(node));
   result.edges.forEach(edge => globalEdges.add(edge));
 
-  return isBackward ? result.sourceIds : result.targetIds; // Return source IDs for backward, target IDs for forward
+  return result.targetIds;
 }
 
 function getBackwardTargets(bindings, sourceYear) {
-  const sourceIds = [];
-  bindings.forEach((record) => {
-    sourceIds.push({
-			sourceId: record.sourceId.value,
-			sourceYear: sourceYear,
-			sourceLabel: record.sourceLabel.value,
-		});
-  });
-  return sourceIds;
+  return bindings.map(record => ({
+    sourceId: record.sourceId.value,
+    sourceYear: sourceYear,
+    sourceLabel: record.sourceLabel.value,
+  }));
 }
