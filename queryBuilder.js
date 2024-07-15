@@ -94,6 +94,8 @@ export function queryBuilder(callerId, family, uri, year) {
     // console.log(res);
     return res;
 	} else if (callerId === "concepts") {
-    return queryForTargets(uri);
+    const res = queryForTargets(uri);
+    // console.log(res);
+    return res;
   }
 }
