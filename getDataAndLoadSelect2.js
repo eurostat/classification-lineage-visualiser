@@ -16,7 +16,7 @@ export function getDataAndLoadSelect2( callerId, family, correspondenceUri, vers
 
 	if (callerId === "families") {
     const query = queryBuilder(callerId, family);
-		getVersion(callerId, query, endpointURL);
+		getVersion(callerId, query, family, endpointURL);
 	} else if (callerId === "versions") {
 		const query = queryBuilder(callerId, family, correspondenceUri, version);
 		getConceptIDs(callerId, query, endpointURL);
@@ -24,7 +24,7 @@ export function getDataAndLoadSelect2( callerId, family, correspondenceUri, vers
 	}
 }
 
-async function getVersion(callerId, query, sparqlEndpoint) {
+async function getVersion(callerId, query, family, sparqlEndpoint) {
   $("#spinner").show(); // Ensure spinner is shown at the start
   try {
 	const futureResponse = await new Promise((resolve, reject) => {
@@ -46,6 +46,7 @@ async function getVersion(callerId, query, sparqlEndpoint) {
 	// Simplify data transformation if only restructuring
 	const storageData = formattedData.map(item => ({
 	  thisYear: item.id,
+	  pastYear: family === "prodcom" && item.id === "2021" ? item.id-2 : item.id-1,
 	  nextYear: item.data.nextYear,
 	  comparisonUri: item.data.comparisonUri,
 	})).filter(item => item.thisYear !== ""); // Filter after mapping to simplify
