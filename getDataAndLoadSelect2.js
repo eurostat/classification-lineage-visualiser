@@ -4,6 +4,7 @@ import { makeAjaxRequest } from './ajaxHelper.js';
 import { formatData } from './dataFormatter.js';
 import { initializeSelect2 } from './select2Helper.js';
 import { createDevDropdown } from './createDevDropdown.js';
+import { prepareAndStoreCorrespondenceData } from './sessionStorage.js';
 
 createDevDropdown();
 
@@ -39,19 +40,13 @@ async function getVersion(callerId, query, family, sparqlEndpoint) {
 	  );
 	});
 
-	const formattedData = formatData(callerId, futureResponse); // Assuming formatData can handle JSON object
+	const formattedData = formatData(callerId, futureResponse);
 
+	prepareAndStoreCorrespondenceData(formattedData, family);
+	
+	formattedData.unshift({ id: "", text: "" }); // Prepend an empty element to the array
 	initializeSelect2(callerId, formattedData); // Load formatted data into select2
 
-	// Simplify data transformation if only restructuring
-	const storageData = formattedData.map(item => ({
-	  thisYear: item.id,
-	  pastYear: family === "prodcom" && item.id === "2021" ? item.id-2 : item.id-1,
-	  nextYear: item.data.nextYear,
-	  comparisonUri: item.data.comparisonUri,
-	})).filter(item => item.thisYear !== ""); // Filter after mapping to simplify
-
-	sessionStorage.setItem("correspondence-table", JSON.stringify(storageData));
   } catch (error) {
 	console.error("Error executing query:", error);
   } finally {
