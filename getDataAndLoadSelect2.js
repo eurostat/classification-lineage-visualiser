@@ -17,7 +17,7 @@ export function getDataAndLoadSelect2( callerId, family, correspondenceUri, vers
 
 	if (callerId === "families") {
     const query = queryBuilder(callerId, family);
-		getVersion(callerId, query, family, endpointURL);
+		getVersion(callerId, query, endpointURL);
 	} else if (callerId === "versions") {
 		const query = queryBuilder(callerId, family, correspondenceUri, version);
 		getConceptIDs(callerId, query, endpointURL);
@@ -25,7 +25,7 @@ export function getDataAndLoadSelect2( callerId, family, correspondenceUri, vers
 	}
 }
 
-async function getVersion(callerId, query, family, sparqlEndpoint) {
+async function getVersion(callerId, query, sparqlEndpoint) {
   $("#spinner").show(); // Ensure spinner is shown at the start
   try {
 	const futureResponse = await new Promise((resolve, reject) => {
