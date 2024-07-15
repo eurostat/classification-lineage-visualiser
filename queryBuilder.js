@@ -66,25 +66,44 @@ ORDER BY DESC(?thisYear)
 }
 
 
-function queryForTargets(uri){
-  return`
-    PREFIX ns2: <http://rdf-vocabulary.ddialliance.org/xkos#>
+function forwardQuery(uri){
+  return `
+    PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
     PREFIX dc: <http://purl.org/dc/elements/1.1/>
     prefix : <${uri}>
 
     SELECT ?CODE ?ID ?LABEL
     WHERE {
-      : ns2:targetConcept ?targetConcept .
+      : xkos:targetConcept ?targetConcept .
       ?targetConcept skos:notation ?CODE;
                     dc:identifier ?ID;
                     skos:altLabel ?LABEL.
       FILTER(DATATYPE(?CODE) = xsd:string && LANG(?LABEL) = "en")
     }
-  `
+`
 }
 
-export function queryBuilder(callerId, family, uri, year) {
+function backwardQuery(uri, conceptId) {
+  return `
+    PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+    PREFIX dc: <http://purl.org/dc/elements/1.1/>
+    PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
+    PREFIX : <${uri}>
+
+    SELECT ?sourceId
+    WHERE {
+      : xkos:madeOf ?Association.
+      ?Association xkos:targetConcept ?Target.
+      ?Target dc:identifier ?targetId.
+      FILTER(?targetId= "${conceptId}")
+      ?Association xkos:sourceConcept ?Source.
+      ?Source dc:identifier ?sourceId.
+    }
+`
+}
+
+export function queryBuilder(callerId, family, uri, year, conceptId) {
 	if (callerId === "versions") {
 		const res = queryForConceptId(family, uri, year);
     // console.log(res);
@@ -93,8 +112,13 @@ export function queryBuilder(callerId, family, uri, year) {
     const res = correspondenceQuery(family);
     // console.log(res);
     return res;
-	} else if (callerId === "concepts") {
-    const res = queryForTargets(uri);
+	} else if (callerId === "pastConcepts") {
+    const res = backwardQuery(uri, conceptId);
+    // console.log(res);
+    // console.trace();
+    return res;
+	} else if (callerId === "futureConcepts") {
+    const res = forwardQuery(uri);
     // console.log(res);
     return res;
   }
