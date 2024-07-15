@@ -82,7 +82,7 @@ function _createDevDropdown() {
     const uri = `http://data.europa.eu/${dom}/xx/`;
     const conceptLabel = e.params.data.data.code;
     const year = e.params.data.data.year;
-    const graphData = await composeGraphData("concepts", category, uri, (+year), conceptId, conceptLabel);
+    const graphData = await composeGraphData("concepts", category, (+year), conceptId, conceptLabel);
     renderChart(graphData);
   });
 }

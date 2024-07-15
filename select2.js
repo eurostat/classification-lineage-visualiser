@@ -38,12 +38,10 @@ $("#versions")
 
 		const version = e.params.data.id;
 		const family = $("#families").val();
-		const futureURI = e.params.data.data.futureURI;
-		const pastURI = e.params.data.data.pastURI;
-		console.log("Future URI:", futureURI);
-		console.log("Past URI:", pastURI);
+		
+		const comparisonUri = e.params.data.data.comparisonUri;
 
-		getDataAndLoadSelect2(e.target.id, family, futureURI || pastURI, version);
+		getDataAndLoadSelect2(e.target.id, family, comparisonUri, version);
 	})
 	.on("select2:clear", function (e) {
 		$("#concepts").empty().prop("disabled", true);
@@ -65,15 +63,11 @@ $("#submit-button").on("click", async function () {
 
 	const family = $("#families").val();
 	const baseYear = Number($("#versions").val());
-	const futureURI = $("#versions").select2("data")[0].data.futureURI;
-	const pastURI = $("#versions").select2("data")[0].data.pastURI;
-	console.log("Future URI:", futureURI);
-	console.log("Past URI:", pastURI);
 	const conceptId = $("#concepts").select2('data')[0].id;
 	const conceptLabel = $("#concepts").select2('data')[0].code;
 	
 	try {
-		const graphData = await composeGraphData("concepts", family, futureURI, baseYear, conceptId, conceptLabel);
+		const graphData = await composeGraphData("concepts", family, baseYear, conceptId, conceptLabel);
 		renderChart(graphData);
 	} catch (error) {
 		console.error("Error:", error.message);

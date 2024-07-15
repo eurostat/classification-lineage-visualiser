@@ -1,4 +1,3 @@
-import { getYearComparisonURI } from "./uriHelper.js";
 import { RequestQueue } from "./ajaxHelper.js";
 import { fetchAndProcessData } from "./fetchAndProcessData.js";
 import { setNodesAndEdges } from "./nodesAndEdges.js";
@@ -11,7 +10,7 @@ const globalEdges = new Set();
 const processedNodes = new Set();
 const processedEdges = new Set();
 
-export async function composeGraphData(id, kin, uri, iYear, conceptId, conceptLabel) {
+export async function composeGraphData(id, kin, iYear, conceptId, conceptLabel) {
   callerId = id;
   family = kin;
 
@@ -20,7 +19,8 @@ export async function composeGraphData(id, kin, uri, iYear, conceptId, conceptLa
   processedNodes.clear();
   processedEdges.clear();
 
-  await renderLineageData(uri, iYear, conceptId, conceptLabel)
+
+  await renderLineageData(iYear, conceptId, conceptLabel)
 
   const nodes = Array.from(globalNodes).map(node => JSON.parse(node));
   const edges = Array.from(globalEdges).map(edge => JSON.parse(edge));
@@ -30,26 +30,19 @@ export async function composeGraphData(id, kin, uri, iYear, conceptId, conceptLa
 }
 
 
-async function renderLineageData(iUri, iYear, conceptId, conceptLabel) {
-  let nextTargetYear = iYear + 1;
-  let pastTargetYear = iYear - 1;
-  if (family === "prodcom") {
-    if (iYear === 2019) {
-      nextTargetYear = nextTargetYear + 1;
-    } else if (iYear === 2021) {
-      pastTargetYear = pastTargetYear - 1;
-    }
-  }
-  const positiveUri = getYearComparisonURI(iUri, family, iYear, nextTargetYear);
-  const negativeUri = getYearComparisonURI(iUri, family, iYear, pastTargetYear);
-  await renderGraphData(positiveUri, conceptId, conceptLabel, iYear, nextTargetYear);
-  await renderGraphData(negativeUri, conceptId, conceptLabel, iYear, pastTargetYear);
+async function renderLineageData(iYear, conceptId, conceptLabel) {
+  const correspondenceTable = JSON.parse(sessionStorage.getItem("correspondence-table"));
+  const targetItem = correspondenceTable.find(item => parseInt(item.thisYear) === iYear);
+  if (!targetItem) return; // Stop if no target item found
+  const { nextYear, comparisonUri } = targetItem;
+  await renderGraphData(comparisonUri, conceptId, conceptLabel, iYear, nextYear);
 }
 
 const requestQueue = new RequestQueue(5); // Limit to 5 concurrent requests
 
 async function renderGraphData(iUri, conceptId, conceptLabel, iYear, targetYear) {
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
+  console.log(`Processing node: ${nodeKey}`);
   if (processedNodes.has(nodeKey)) return; // Stop if node already processed
 
     const newTargets = await requestQueue.add(() => fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, targetYear));
@@ -57,7 +50,7 @@ async function renderGraphData(iUri, conceptId, conceptLabel, iYear, targetYear)
       // Mark the current node as processed before processing children
       processedNodes.add(nodeKey);
       const newPromises = newTargets.map((target) => {
-        return renderLineageData(iUri, target.targetYear, target.targetId, target.targetLabel);
+        return renderLineageData(parseInt(target.targetYear), target.targetId, target.targetLabel);
       });
       await Promise.all(newPromises)
     }

@@ -7,8 +7,7 @@ import { createDevDropdown } from './createDevDropdown.js';
 
 createDevDropdown();
 
-export function getDataAndLoadSelect2( callerId, family, correspondences, version) {
-  
+export function getDataAndLoadSelect2( callerId, family, correspondenceUri, version) {
 	const proxy = "https://cors-anywhere.herokuapp.com/";
 	const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
 	const endpointURL = `${proxy}${sparqlEndpoint}`;
@@ -19,7 +18,7 @@ export function getDataAndLoadSelect2( callerId, family, correspondences, versio
     const query = queryBuilder(callerId, family);
 		getVersion(callerId, query, endpointURL);
 	} else if (callerId === "versions") {
-		const query = queryBuilder(callerId, family, correspondences, version);
+		const query = queryBuilder(callerId, family, correspondenceUri, version);
 		getConceptIDs(callerId, query, endpointURL);
 
 	}
@@ -48,7 +47,7 @@ async function getVersion(callerId, query, sparqlEndpoint) {
 	const storageData = formattedData.map(item => ({
 	  thisYear: item.id,
 	  nextYear: item.data.nextYear,
-	  comparison: item.data.comparison,
+	  comparisonUri: item.data.comparisonUri,
 	})).filter(item => item.thisYear !== ""); // Filter after mapping to simplify
 
 	sessionStorage.setItem("correspondence-table", JSON.stringify(storageData));

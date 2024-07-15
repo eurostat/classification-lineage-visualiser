@@ -16,7 +16,7 @@ function formatDataVersions(data) {
   return data.results.bindings.map(item => ({
     id: item.thisYear.value,
     text: item.thisNotation.value,
-    data: { comparison: item.comparison.value, nextYear: item.nextYear.value },
+    data: { comparisonUri: item.comparison.value, nextYear: item.nextYear.value },
   }));
 }
 
