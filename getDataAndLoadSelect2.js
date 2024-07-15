@@ -42,7 +42,7 @@ async function getVersion(callerId, query, family, sparqlEndpoint) {
 
 	const formattedData = formatData(callerId, futureResponse);
 
-	prepareAndStoreCorrespondenceData(formattedData, family);
+	prepareAndStoreCorrespondenceData(formattedData);
 	
 	formattedData.unshift({ id: "", text: "" }); // Prepend an empty element to the array
 	initializeSelect2(callerId, formattedData); // Load formatted data into select2

@@ -1,7 +1,7 @@
-export function prepareAndStoreCorrespondenceData(formattedData, family) {
+export function prepareAndStoreCorrespondenceData(formattedData) {
 	const storageData = formattedData.map(item => ({
 		thisYear: item.id,
-		pastYear: family === "prodcom" && item.id === "2021" ? item.id - 2 : item.id - 1,
+		pastYear: item.data.pastYear,
 		nextYear: item.data.nextYear,
 		comparisonUri: item.data.comparisonUri,
 	}));
