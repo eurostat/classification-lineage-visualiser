@@ -39,9 +39,9 @@ $("#versions")
 		const version = e.params.data.id;
 		const family = $("#families").val();
 		
-		const comparisonUri = e.params.data.data.comparisonUri;
+		const correspUri = e.params.data.data.correspUri;
 
-		getDataAndLoadSelect2(e.target.id, family, comparisonUri, version);
+		getDataAndLoadSelect2(e.target.id, family, correspUri, version);
 	})
 	.on("select2:clear", function (e) {
 		$("#concepts").empty().prop("disabled", true);

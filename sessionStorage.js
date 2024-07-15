@@ -3,7 +3,7 @@ export function prepareAndStoreCorrespondenceData(formattedData) {
 		thisYear: item.id,
 		pastYear: item.data.pastYear,
 		nextYear: item.data.nextYear,
-		comparisonUri: item.data.comparisonUri,
+		correspUri: item.data.correspUri,
 	}));
 	sessionStorage.setItem("correspondence-table", JSON.stringify(storageData));
 }
