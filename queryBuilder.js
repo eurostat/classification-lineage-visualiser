@@ -91,14 +91,16 @@ function backwardQuery(uri, conceptId) {
     PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
     PREFIX : <${uri}>
 
-    SELECT ?sourceId
+    SELECT ?sourceId ?sourceLabel
     WHERE {
       : xkos:madeOf ?Association.
       ?Association xkos:targetConcept ?Target.
       ?Target dc:identifier ?targetId.
       FILTER(?targetId= "${conceptId}")
       ?Association xkos:sourceConcept ?Source.
-      ?Source dc:identifier ?sourceId.
+      ?Source dc:identifier ?sourceId;
+              skos:altLabel ?sourceLabel.
+      FILTER(LANG(?sourceLabel) = "en")
     }
 `
 }

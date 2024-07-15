@@ -10,7 +10,6 @@ const globalNodes = new Set();
 const globalEdges = new Set();
 const processedNodes = new Set();
 const processedEdges = new Set();
-const correspondenceTable = getCorrespondenceTable();
 
 export async function composeGraphData(id, kin, iYear, conceptId, conceptLabel) {
   callerId = id;
@@ -33,7 +32,8 @@ export async function composeGraphData(id, kin, iYear, conceptId, conceptLabel) 
 
 // Processes forward lineage
 async function processForwardLineage(iYear, conceptId, conceptLabel) {
-  const targetItem = correspondenceTable.find(item => parseInt(item.thisYear) === iYear);
+  const correspondenceTableData = await getCorrespondenceTable();
+  const targetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
   if (!targetItem) return; // Stop if no target item found
 
   const { nextYear: forwardYear, correspUri: correspondenceUrl} = targetItem;
@@ -46,30 +46,32 @@ async function processForwardLineage(iYear, conceptId, conceptLabel) {
 
 // Processes backward lineage
 async function processBackwardLineage(iYear, conceptId) {
-  const pastTargetItem = correspondenceTable.find(item => parseInt(item.thisYear) === iYear);
+  const correspondenceTableData = await getCorrespondenceTable();
+  const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
   if (!pastTargetItem) return; // Additional check if pastYear data is missing
 
   console.log("Past target item:", pastTargetItem);
 
-  const { correspUri , pastYear } = pastTargetItem;
+  const { correspUri, pastYear } = pastTargetItem;
   await renderBackwardGraphData(correspUri, conceptId, iYear, pastYear);
 }
 
 // Main function to render lineage data
 async function renderLineageData(iYear, conceptId, conceptLabel) {
-  const targetItem = correspondenceTable.find(item => parseInt(item.thisYear) === iYear);
+  const correspondenceTableData = await getCorrespondenceTable();
+  const targetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
   if (!targetItem) return; // Stop if no target item found
 
-  const { nextYear: forwardYear, correspUri: correspondenceUrl, pastYear } = targetItem;
+  const { nextYear: forwardYear, correspUri, pastYear } = targetItem;
 
   // Process forward lineage
   if (forwardYear) {
-    await renderGraphData(correspondenceUrl, conceptId, conceptLabel, iYear, forwardYear);
+    await renderGraphData(correspUri, conceptId, conceptLabel, iYear, forwardYear);
   }
   
   // Process backward lineage
   if (pastYear) {
-    const pastTargetItem = correspondenceTable.find(item => parseInt(item.thisYear) === pastYear);
+    const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === pastYear);
     if (!pastTargetItem) return; // Additional check if pastYear data is missing
 
     console.log("Past target item:", pastTargetItem);
@@ -134,9 +136,11 @@ export function getTargets(data, conceptId, conceptLabel, iYear, targetYear) {
 function getBackwardTargets(bindings, sourceYear) {
   const sourceIds = [];
   bindings.forEach((record) => {
-    console.log("Record:", record);
-    const sourceId = record.sourceId.value;
-    sourceIds.push({ sourceId, sourceYear:sourceYear});
+    sourceIds.push({
+			sourceId: record.sourceId.value,
+			sourceYear: sourceYear,
+			sourceLabel: record.sourceLabel.value,
+		});
   });
   return sourceIds;
 }
