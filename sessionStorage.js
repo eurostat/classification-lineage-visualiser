@@ -7,3 +7,9 @@ export function prepareAndStoreCorrespondenceData(formattedData) {
 	}));
 	sessionStorage.setItem("correspondence-table", JSON.stringify(storageData));
 }
+
+// Extracts the correspondence table from session storage
+export async function getCorrespondenceTable() {
+  return JSON.parse(sessionStorage.getItem("correspondence-table"));
+}
+
