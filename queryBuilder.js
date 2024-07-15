@@ -31,7 +31,7 @@ PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT DISTINCT ?thisNotation ?thisYear ?pastYear ?nextYear ?comparison
+SELECT DISTINCT ?thisNotation ?thisYear ?pastYear ?nextYear ?correspondenceUri
 WHERE { 
   ?currentURI a skos:ConceptScheme ;
               skos:notation ?thisNotation ;
@@ -39,21 +39,23 @@ WHERE {
               owl:versionInfo ?thisYear .
 
   OPTIONAL { 
-    ?currentURI xkos:follows ?thisFollows .
-    ?thisFollows owl:versionInfo ?pastYear .
+    ?currentURI xkos:follows ?previousURI .
+    ?previousURI owl:versionInfo ?pastYear .
   }
 
   OPTIONAL { 
-    ?FollowingURI a skos:ConceptScheme ;
-                  xkos:follows ?currentURI .
-    ?comparison xkos:compares ?currentURI ;
-                xkos:compares ?FollowingURI ;
-                xkos:madeOf ?Association .
-    ?Association xkos:sourceConcept ?Concept .
-    ?Concept skos:inScheme ?currentURI .
-    ?FollowingURI owl:versionInfo ?nextYear .
+    ?nextURI xkos:follows ?currentURI .
+    ?nextURI owl:versionInfo ?nextYear .
+
+    OPTIONAL {
+      ?correspondenceUri xkos:compares ?currentURI, ?nextURI ;
+                  xkos:madeOf ?association .
+      ?association xkos:sourceConcept ?concept .
+      ?concept skos:inScheme ?currentURI .
+    }
   }
 
+  #FILTER(regex(?thisYear, "\\d{4}"))
   VALUES ?classSeries { 
     <http://data.europa.eu/2en/class-series/${family}> 
     <http://data.europa.eu/2en/classification-series/${family}> 
@@ -89,7 +91,7 @@ export function queryBuilder(callerId, family, uri, year) {
     return res;
 	} else if (callerId === "families") {
     const res = correspondenceQuery(family);
-    // console.log(res);
+    console.log(res);
     return res;
 	} else if (callerId === "concepts") {
     return queryForTargets(uri);
