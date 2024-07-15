@@ -1,19 +1,20 @@
 import { toQueryParams } from "./uriHelper.js";
 import { queryBuilder } from "./queryBuilder.js";
 import { makeAjaxRequest } from "./ajaxHelper.js";
-import { callerId, family, getTargets } from "./dataForGraphs.js";
+import { family, getTargets } from "./dataForGraphs.js";
 
-export async function fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, targetYear) {
+export async function fetchAndProcessData(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear) {
+  $("#spinner").show();
   const corsAnywhereUrl = "https://cors-anywhere.herokuapp.com/";
   const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
-  const conceptRDFUri = iUri + "_" + conceptId;
-
-  $("#spinner").show();
+  const isBackward = iYear > targetYear;
+  console.log(`-- ${isBackward?'pastConcept':'futureConcept'}: ${conceptId}-${iYear}-${targetYear}`, conceptRDFUri);
 
   // Data to be sent as query parameters
-  const data = { query: queryBuilder(callerId, family, conceptRDFUri, iYear, targetYear) };
-  const queryParams = toQueryParams(data);
-
+  const callerId = isBackward ? "pastConcepts" : "futureConcepts";
+  const q = { query: queryBuilder( callerId, family, conceptRDFUri, '', conceptId), };
+  const queryParams = toQueryParams(q);
+  
   return new Promise((resolve, reject) => {
     makeAjaxRequest(
       `${corsAnywhereUrl}${sparqlEndpoint}?${queryParams}`, // Include query parameters in the URL
