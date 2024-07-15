@@ -24,28 +24,15 @@ export async function fetchAndProcessData(iUri, conceptId, conceptLabel, iYear, 
       },
       {}, // No data in the body for GET request
       function (data) {
-        // console.log("Raw Response Data:", data); // Log the raw response data
         try {
-          let parsedData;
-          if (typeof data === "string") {
-            try {
-              parsedData = JSON.parse(data); // Attempt to parse the data as JSON
-            } catch (jsonError) {
-              // console.error("JSON parsing error:", jsonError, "Response data:", data);
-              reject(new Error("Invalid JSON response"));
-              return;
-            }
-          } else {
-            parsedData = data;
-          }
-          // console.log("Parsed Response Data:", parsedData);
-          const newTargets = getTargets(parsedData, conceptId, conceptLabel, iYear, targetYear);
-          $("#spinner").hide();
+          const newTargets = getTargets(data, conceptId, conceptLabel, iYear, targetYear);
           resolve(newTargets); // Resolve promise with new targets
         } catch (e) {
-          console.error("Failed to process response data:", e, "Response data:", data);
-          $("#spinner").hide();
-          reject(new Error("Invalid JSON response"));
+          console.error("Failed to process response data:", e, "Response data:", data, 
+                        "Parameters:", {conceptId, conceptLabel, iYear, targetYear});
+          reject(new Error(`Invalid JSON response for conceptId: ${conceptId}, conceptLabel: ${conceptLabel}, iYear: ${iYear}, targetYear: ${targetYear}`));
+        } finally {
+          $("#spinner").hide(); 
         }
       },
       function (fetchError) {
