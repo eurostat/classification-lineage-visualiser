@@ -73,7 +73,7 @@ async function renderBackwardGraphData(correspondenceUri, conceptId, iYear, targ
   const newSources = await requestQueue.add(() => fetchAndProcessData(correspondenceUri, conceptId, '', iYear, targetYear));
   if (newSources.length > 0) {
     processedNodes.add(nodeKey);
-    await Promise.all(newSources.map(source => processForwardLineage(parseInt(source.sourceYear), source.sourceId, source.sourceLabel)));
+    await Promise.all(newSources.map(source => renderLineageData(parseInt(source.sourceYear), source.sourceId, source.sourceLabel)));
     await Promise.all(newSources.map(source => processBackwardLineage(parseInt(source.sourceYear), source.sourceId)));
   }
 }
@@ -103,7 +103,9 @@ async function processBackwardLineage(iYear, conceptId) {
 export function getTargets(data, conceptId, conceptLabel, iYear, targetYear) {
   const isBackward = iYear > targetYear;
   const bindings = data.results.bindings;
-  const targets = isBackward ? getBackwardTargets(bindings, targetYear) : getForwardTargets(bindings, conceptId, conceptLabel, iYear, targetYear);
+  const targets = isBackward
+		? getBackwardTargets(bindings, targetYear)
+		: getForwardTargets(bindings, conceptId, conceptLabel, iYear, targetYear);
 
   return targets;
 }
