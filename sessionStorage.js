@@ -1,7 +1,4 @@
 export function prepareAndStoreCorrespondenceData(formattedData) {
-	formattedData.forEach(el=> {
-		console.log(el.text === "PRODCOM 2019-2021"? el.data.pastYear|| "x": el.text);
-	});
 	const storageData = formattedData.map(item => ({
 		thisYear: Number(item.id),
 		pastYear: item.text === "PRODCOM 2021" ? 2019 : Number(item.data.pastYear),
