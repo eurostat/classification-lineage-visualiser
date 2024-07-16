@@ -107,7 +107,6 @@ function backwardQuery(uri, conceptId) {
       ?Association xkos:sourceConcept ?Source.
       ?Source dc:identifier ?sourceId;
               skos:notation ?sourceLabel.
-      FILTER(LANG(?sourceLabel) = "en" && DATATYPE(?sourceLabel) = xsd:string)
     }
 `
 }
