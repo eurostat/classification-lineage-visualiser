@@ -2,23 +2,30 @@ function queryForConceptId(family, uri, version) {
   const uriParts = uri.split('/');
   uriParts.pop();
   const newUri = uriParts.join('/') + '/';
+  const depth = family === "prodcom" ? "3" : "5";
 
 	return `
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
     PREFIX dc: <http://purl.org/dc/elements/1.1/>
-    PREFIX dct: <http://purl.org/dc/terms/>
+    PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
     PREFIX : <${newUri}>
 
-    SELECT ?ID ?CODE ?LABEL WHERE { 
-        ?s a skos:Concept;
+    SELECT ?ID ?CODE ?LABEL 
+    WHERE { 
+        ?conceptUri a skos:Concept;
             skos:inScheme :${family}${version};
             dc:identifier ?ID;
             skos:notation ?CODE;
             skos:altLabel ?LABEL.
-        FILTER ( datatype(?CODE) = xsd:string  &&  LANG(?LABEL) = "en")
+            
+        FILTER (datatype(?CODE) = xsd:string && LANG(?LABEL) = "en")
+        
+        ?ClassLevel a xkos:ClassificationLevel;
+            skos:member ?conceptUri;
+            xkos:depth "${depth}"^^xsd:positiveInteger.
     }
+    ORDER BY ASC(?ID)
 `;
 }
 
