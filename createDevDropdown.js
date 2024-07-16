@@ -1,5 +1,6 @@
 import { composeGraphData } from './dataForGraphs.js';
 import { renderChart } from './renderChart.js';
+import { getDataAndLoadSelect2 } from "./getDataAndLoadSelect2.js";
 
 export function createDevDropdown() {
 	const urlParams = new URLSearchParams(window.location.search);
@@ -38,7 +39,8 @@ function _createDevDropdown() {
     ["760612920080", ["2019", "2022"]],
     ["190190990080", ["2020", "2022"]],
     ["392690970080", ["2020", "2021"]],
-    ["846229100080", ["2021", "2022"]]
+    ["846229100080", ["2021", "2022"]],
+    ["846229000080", ["2023" ]]
   ];
 
   const devData = data.flatMap(([conceptId, years]) => {
@@ -76,16 +78,19 @@ function _createDevDropdown() {
     allowClear: true,
     data: devData,
   }).on("select2:select", async function (e) {
-    $("#visualization").empty();
-    $("#errorContainer").empty();
-
-    const conceptId = e.params.data.data.id;
-    const category = /^\d{8}$/.test(conceptId) ? "prodcom" : "cn";
-    const dom = category === "prodcom" ? "qw1" : "xsp";
-    const uri = `http://data.europa.eu/${dom}/xx/`;
-    const conceptLabel = e.params.data.data.code;
-    const year = e.params.data.data.year;
-    const graphData = await composeGraphData("concepts", category, (+year), conceptId, conceptLabel);
-    renderChart(graphData);
+      $("#visualization").empty();
+      $("#errorContainer").empty();
+  
+      const conceptId = e.params.data.data.id;
+      const category = /^\d{8}$/.test(conceptId) ? "prodcom" : "cn";
+      getDataAndLoadSelect2("families", category);
+  
+      // Wait for getDataAndLoadSelect2 to finish, then wait an additional second
+      await new Promise(resolve => setTimeout(resolve, 1000));
+  
+      const conceptLabel = e.params.data.data.code;
+      const year = e.params.data.data.year;
+      const graphData = await composeGraphData("concepts", category, (+year), conceptId, conceptLabel);
+      renderChart(graphData);
   });
 }
