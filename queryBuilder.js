@@ -99,8 +99,8 @@ function backwardQuery(uri, conceptId) {
       FILTER(?targetId= "${conceptId}")
       ?Association xkos:sourceConcept ?Source.
       ?Source dc:identifier ?sourceId;
-              skos:altLabel ?sourceLabel.
-      FILTER(LANG(?sourceLabel) = "en")
+              skos:notation ?sourceLabel.
+      FILTER(LANG(?sourceLabel) = "en" && DATATYPE(?sourceLabel) = xsd:string)
     }
 `
 }
