@@ -1,4 +1,4 @@
-function createNode(nodeKey, label, year, nodes) {
+function createNodeAndAddToSet(nodeKey, label, year, nodes) {
   const node = {
     id: nodeKey,
     label: label,
@@ -7,7 +7,7 @@ function createNode(nodeKey, label, year, nodes) {
   nodes.add(JSON.stringify(node));
 }
 
-function createEdge(edges, sourceNodeKey, targetNodeKey) {
+function createEdgeAndAddToSet(edges, sourceNodeKey, targetNodeKey) {
   const edge = {
     source: sourceNodeKey,
     target: targetNodeKey,
@@ -15,23 +15,28 @@ function createEdge(edges, sourceNodeKey, targetNodeKey) {
   edges.add(JSON.stringify(edge));
 }
 
-export function setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedNodes, processedEdges) {
+export function setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedEdges) {
   const nodes = new Set();
   const edges = new Set();
   const targetIds = [];
 
   const sourceNodeKey = `${conceptId}-${iYear}`;
-  createNode(sourceNodeKey, conceptLabel, iYear, nodes);
+
+  if (bindings.length === 0) {
+    return { nodes, edges, targetIds };
+  }
+
+  createNodeAndAddToSet(sourceNodeKey, conceptLabel, iYear, nodes);
 
   bindings.forEach((record) => {
     const targetId = record.ID.value;
     const targetLabel = record.CODE.value;
     const targetNodeKey = `${targetId}-${targetYear}`;
-    createNode(targetNodeKey, targetLabel, targetYear, nodes);
+    createNodeAndAddToSet(targetNodeKey, targetLabel, targetYear, nodes);
 
     const edgeKey = [sourceNodeKey, targetNodeKey].sort().join('-');
     if (!processedEdges.has(edgeKey)) {
-      createEdge(edges, sourceNodeKey, targetNodeKey);
+      createEdgeAndAddToSet(edges, sourceNodeKey, targetNodeKey);
       processedEdges.add(edgeKey);
     }
 
