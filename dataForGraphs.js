@@ -10,6 +10,7 @@ const globalNodes = new Set();
 const globalEdges = new Set();
 const processedNodes = new Set();
 const processedEdges = new Set();
+const requestQueue = new RequestQueue(5);
 
 export async function composeGraphData(id, kin, iYear, conceptId, conceptLabel) {
   callerId = id;
@@ -23,24 +24,19 @@ export async function composeGraphData(id, kin, iYear, conceptId, conceptLabel) 
   await renderLineageData(iYear, conceptId, conceptLabel);
 
   if (globalNodes.size === 0) {
-		const nodes = [{
-				id: `${conceptId}-${iYear}`,
-				label: conceptLabel,
-				year: iYear,
-			}];
+    const nodes = [{ id: `${conceptId}-${iYear}`, label: conceptLabel, year: iYear }];
     return { nodes, edges: [] };
-	}
+  }
 
   const nodes = Array.from(globalNodes).map(JSON.parse);
   const edges = Array.from(globalEdges).map(JSON.parse);
-  
+
   console.log("Nodes:", nodes);
   console.log("Edges:", edges);
-  
+
   return { nodes, edges };
 }
 
-// Fetch and process lineage data
 async function renderLineageData(iYear, conceptId, conceptLabel) {
   const correspondenceTableData = await getCorrespondenceTable();
   const targetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
@@ -55,13 +51,10 @@ async function renderLineageData(iYear, conceptId, conceptLabel) {
   if (pastYear) {
     const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === pastYear);
     if (pastTargetItem) {
-      const { correspUri: pastCorrespondenceUrl } = pastTargetItem;
-      await renderBackwardGraphData(pastCorrespondenceUrl, conceptId, iYear, pastYear);
+      await renderBackwardGraphData(pastTargetItem.correspUri, conceptId, iYear, pastYear);
     }
   }
 }
-
-const requestQueue = new RequestQueue(5);
 
 async function renderGraphData(correspondenceUri, conceptId, conceptLabel, iYear, targetYear) {
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
@@ -69,6 +62,7 @@ async function renderGraphData(correspondenceUri, conceptId, conceptLabel, iYear
 
   const conceptRDFUri = `${correspondenceUri}_${conceptId}`;
   const newTargets = await requestQueue.add(() => fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear));
+  
   if (newTargets.length > 0) {
     processedNodes.add(nodeKey);
     await Promise.all(newTargets.map(target => processForwardLineage(parseInt(target.targetYear), target.targetId, target.targetLabel)));
@@ -80,6 +74,7 @@ async function renderBackwardGraphData(correspondenceUri, conceptId, iYear, targ
   if (processedNodes.has(nodeKey)) return;
 
   const newSources = await requestQueue.add(() => fetchAndProcessTargets(correspondenceUri, conceptId, '', iYear, targetYear));
+
   if (newSources.length > 0) {
     processedNodes.add(nodeKey);
     await Promise.all(newSources.map(source => renderLineageData(parseInt(source.sourceYear), source.sourceId, source.sourceLabel)));
@@ -112,16 +107,14 @@ async function processBackwardLineage(iYear, conceptId) {
 export function processTargets(data, conceptId, conceptLabel, iYear, targetYear) {
   const isBackward = iYear > targetYear;
   const bindings = data.results.bindings;
-  const targets = isBackward
-		? getBackwardTargets(bindings, targetYear)
-		: getForwardTargets(bindings, conceptId, conceptLabel, iYear, targetYear);
-
-  return targets;
+  return isBackward
+    ? getBackwardTargets(bindings, targetYear)
+    : getForwardTargets(bindings, conceptId, conceptLabel, iYear, targetYear);
 }
 
 function getForwardTargets(bindings, conceptId, conceptLabel, iYear, targetYear) {
   const result = setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedEdges, false);
-  
+
   result.nodes.forEach(node => globalNodes.add(node));
   result.edges.forEach(edge => globalEdges.add(edge));
 
