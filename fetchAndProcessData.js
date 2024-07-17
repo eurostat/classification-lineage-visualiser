@@ -1,14 +1,13 @@
 import { toQueryParams } from "./uriHelper.js";
 import { queryBuilder } from "./queryBuilder.js";
 import { makeAjaxRequest } from "./ajaxHelper.js";
-import { family, getTargets } from "./dataForGraphs.js";
+import { family, processTargets } from "./dataForGraphs.js";
 
-export async function fetchAndProcessData(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear) {
+export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear) {
   $("#spinner").show();
   const corsAnywhereUrl = "https://cors-anywhere.herokuapp.com/";
   const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
   const isBackward = iYear > targetYear;
-  console.log(`-- ${isBackward?'pastConcept':'futureConcept'}: ${conceptId}-${iYear}-${targetYear}`, conceptRDFUri);
 
   // Data to be sent as query parameters
   const callerId = isBackward ? "pastConcepts" : "futureConcepts";
@@ -26,7 +25,7 @@ export async function fetchAndProcessData(conceptRDFUri, conceptId, conceptLabel
       {}, // No data in the body for GET request
       function (data) {
         try {
-          const newTargets = getTargets(data, conceptId, conceptLabel, iYear, targetYear);
+          const newTargets = processTargets(data, conceptId, conceptLabel, iYear, targetYear);
           resolve(newTargets); // Resolve promise with new targets
         } catch (e) {
           console.error("Failed to process response data:", e, "Response data:", data, 
