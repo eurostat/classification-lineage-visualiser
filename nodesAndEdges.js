@@ -16,45 +16,46 @@ function createEdgeAndAddToSet(edges, sourceNodeKey, targetNodeKey) {
 }
 
 export function setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedEdges) {
+  if (bindings.length === 0) {
+    return { nodes: new Set(), edges: new Set(), targetIds: [] };
+  }
+
   const nodes = new Set();
   const edges = new Set();
   const targetIds = [];
-
   const sourceNodeKey = `${conceptId}-${iYear}`;
-
-  if (bindings.length === 0) {
-    return { nodes, edges, targetIds };
-  }
 
   createNodeAndAddToSet(sourceNodeKey, conceptLabel, iYear, nodes);
 
-  bindings.forEach((record) => {
-    const targetId = record.ID.value;
-    const targetLabel = record.CODE.value;
-    const targetNodeKey = `${targetId}-${targetYear}`;
-    createNodeAndAddToSet(targetNodeKey, targetLabel, targetYear, nodes);
+  bindings.forEach(
+		({
+			ID: { value: targetId },
+			CODE: { value: targetLabel },
+			CLOSE_MATCH_FAMILY: { value: hasChildren },
+			CLOSE_MATCH_ID: { value: childId } = {},
+			CLOSE_MATCH_CODE: { value: childLabel } = {},
+		}) => {
+			const targetNodeKey = `${targetId}-${targetYear}`;
+			createNodeAndAddToSet(targetNodeKey, targetLabel, targetYear, nodes);
+			addEdgeIfNew(edges, processedEdges, sourceNodeKey, targetNodeKey);
+			targetIds.push({ targetId, targetYear, targetLabel });
 
-    if (record.CLOSE_MATCH_FAMILY.value === "true") {
-      const targetId = record.CLOSE_MATCH_ID.value;
-      const targetLabel = record.CLOSE_MATCH_CODE.value;
-      const familyNodeKey = `${targetId}-${iYear}`;
-      createNodeAndAddToSet(familyNodeKey, targetLabel, iYear, nodes);
+			if (hasChildren === "true") {
+				const familyNodeKey = `${childId}-${iYear}`;
+				createNodeAndAddToSet(familyNodeKey, childLabel, iYear, nodes);
+				addEdgeIfNew(edges, processedEdges, familyNodeKey, targetNodeKey);
+			}
 
-      const edgeKey = [familyNodeKey, targetNodeKey].sort().join('-');
-      if (!processedEdges.has(edgeKey)) {
-        createEdgeAndAddToSet(edges, familyNodeKey, targetNodeKey);
-        processedEdges.add(edgeKey);
-      }
-    }
-
-    const edgeKey = [sourceNodeKey, targetNodeKey].sort().join('-');
-    if (!processedEdges.has(edgeKey)) {
-      createEdgeAndAddToSet(edges, sourceNodeKey, targetNodeKey);
-      processedEdges.add(edgeKey);
-    }
-
-    targetIds.push({ targetId, targetYear, targetLabel });
-  });
+		}
+	);
 
   return { nodes, edges, targetIds };
+}
+
+function addEdgeIfNew(edges, processedEdges, nodeKey1, nodeKey2) {
+  const edgeKey = [nodeKey1, nodeKey2].sort().join('-');
+  if (!processedEdges.has(edgeKey)) {
+    createEdgeAndAddToSet(edges, nodeKey1, nodeKey2);
+    processedEdges.add(edgeKey);
+  }
 }
