@@ -56,15 +56,16 @@ async function renderBothWaysLineageData(iYear, conceptId, conceptLabel, directF
   }
 }
 
-async function renderForwardLineageData(correspondenceUri, conceptId, conceptLabel, iYear, targetYear, lookBack = false) {
+async function renderForwardLineageData(correspondenceUri, conceptId, conceptLabel, iYear, targetYear, directFamily = false) {
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
   if (processedNodes.has(nodeKey)) return;
 
   const conceptRDFUri = `${correspondenceUri}_${conceptId}`;
-  const newTargets = await requestQueue.add(() => fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear));
+  const newTargets = await requestQueue.add(() => fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear, directFamily));
   
   if (newTargets.length > 0) {
     processedNodes.add(nodeKey);
+    console.log("rhi New targets:", newTargets);
     await Promise.all(newTargets.map(target => processForwardLineage(parseInt(target.targetYear), target.targetId, target.targetLabel)));
   }
 }
@@ -113,7 +114,8 @@ export function processTargets(data, conceptId, conceptLabel, iYear, targetYear)
 }
 
 function getForwardTargets(bindings, conceptId, conceptLabel, iYear, targetYear) {
-  const result = setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedEdges, false);
+  // console.log("rhi2 Forward targets:", bindings);
+  const result = setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedEdges);
 
   result.nodes.forEach(node => globalNodes.add(node));
   result.edges.forEach(edge => globalEdges.add(edge));
@@ -122,6 +124,7 @@ function getForwardTargets(bindings, conceptId, conceptLabel, iYear, targetYear)
 }
 
 function getBackwardTargets(bindings, sourceYear) {
+  // console.log("rhi Backward targets:", bindings);
   return bindings.map(record => ({
     sourceId: record.sourceId.value,
     sourceYear: sourceYear,

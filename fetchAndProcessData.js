@@ -3,7 +3,7 @@ import { queryBuilder } from "./queryBuilder.js";
 import { makeAjaxRequest } from "./ajaxHelper.js";
 import { family, processTargets } from "./dataForGraphs.js";
 
-export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear) {
+export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear, directFamily) {
   $("#spinner").show();
   const corsAnywhereUrl = "https://cors-anywhere.herokuapp.com/";
   const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
@@ -11,7 +11,7 @@ export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLa
 
   // Data to be sent as query parameters
   const callerId = isBackward ? "pastConcepts" : "futureConcepts";
-  const q = { query: queryBuilder( callerId, family, conceptRDFUri, '', conceptId), };
+  const q = { query: queryBuilder( callerId, family, conceptRDFUri, '', conceptId, directFamily) };
   const queryParams = toQueryParams(q);
   
   return new Promise((resolve, reject) => {
@@ -25,7 +25,7 @@ export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLa
       {}, // No data in the body for GET request
       function (data) {
         try {
-          const newTargets = processTargets(data, conceptId, conceptLabel, iYear, targetYear);
+          const newTargets = processTargets(data, conceptId, conceptLabel, iYear, targetYear); //TODO: pass direct family as parameter and use iYear
           resolve(newTargets); // Resolve promise with new targets
         } catch (e) {
           console.error("Failed to process response data:", e, "Response data:", data, 

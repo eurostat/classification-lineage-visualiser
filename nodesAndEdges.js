@@ -34,6 +34,19 @@ export function setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targe
     const targetNodeKey = `${targetId}-${targetYear}`;
     createNodeAndAddToSet(targetNodeKey, targetLabel, targetYear, nodes);
 
+    if (record.CLOSE_MATCH_FAMILY.value === "true") {
+      const targetId = record.CLOSE_MATCH_ID.value;
+      const targetLabel = record.CLOSE_MATCH_CODE.value;
+      const familyNodeKey = `${targetId}-${iYear}`;
+      createNodeAndAddToSet(familyNodeKey, targetLabel, iYear, nodes);
+
+      const edgeKey = [familyNodeKey, targetNodeKey].sort().join('-');
+      if (!processedEdges.has(edgeKey)) {
+        createEdgeAndAddToSet(edges, familyNodeKey, targetNodeKey);
+        processedEdges.add(edgeKey);
+      }
+    }
+
     const edgeKey = [sourceNodeKey, targetNodeKey].sort().join('-');
     if (!processedEdges.has(edgeKey)) {
       createEdgeAndAddToSet(edges, sourceNodeKey, targetNodeKey);

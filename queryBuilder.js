@@ -73,7 +73,7 @@ ORDER BY DESC(?thisYear)
 }
 
 
-function forwardQuery(uri){
+function forwardQuery(uri, directFamily){
   return `
     PREFIX : <${uri}>
     PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
@@ -82,7 +82,7 @@ function forwardQuery(uri){
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX owl: <http://www.w3.org/2002/07/owl#>
 
-    SELECT ?CODE ?ID ?LABEL ?CLOSE_MATCH_ID ?CLOSE_MATCH_VERSION ?CLOSE_MATCH_CODE
+    SELECT ?CODE ?ID ?LABEL ?CLOSE_MATCH_ID ?CLOSE_MATCH_VERSION ?CLOSE_MATCH_CODE ?CLOSE_MATCH_FAMILY
     WHERE {
       # Define the target concept
       : xkos:targetConcept ?targetConcept .
@@ -103,8 +103,8 @@ function forwardQuery(uri){
                     skos:notation ?CLOSE_MATCH_CODE .
         FILTER (DATATYPE(?CLOSE_MATCH_CODE) = xsd:string)
       }
+      BIND("${directFamily}" AS ?CLOSE_MATCH_FAMILY)
     }
-
 `
 }
 
@@ -128,7 +128,7 @@ function backwardQuery(uri, conceptId) {
 `
 }
 
-export function queryBuilder(callerId, family, uri, year, conceptId) {
+export function queryBuilder(callerId, family, uri, year, conceptId, directFamily) {
 	if (callerId === "versions") {
 		const res = queryForConceptId(family, uri, year);
     // console.log(res);
@@ -143,8 +143,8 @@ export function queryBuilder(callerId, family, uri, year, conceptId) {
     // console.trace();
     return res;
 	} else if (callerId === "futureConcepts") {
-    const res = forwardQuery(uri);
-    console.log(res);
+    const res = forwardQuery(uri, directFamily);
+    // console.log(res);
     return res;
   }
 }
