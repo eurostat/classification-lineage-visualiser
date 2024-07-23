@@ -25,7 +25,7 @@ export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLa
       {}, // No data in the body for GET request
       function (data) {
         try {
-          const newTargets = processTargets(data, conceptId, conceptLabel, iYear, targetYear); //TODO: pass direct family as parameter and use iYear
+          const newTargets = processTargets(data, conceptId, conceptLabel, iYear, targetYear, directFamily); 
           resolve(newTargets); // Resolve promise with new targets
         } catch (e) {
           console.error("Failed to process response data:", e, "Response data:", data, 
