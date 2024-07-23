@@ -115,15 +115,15 @@ function backwardQuery(uri, conceptId) {
     PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
     PREFIX : <${uri}>
 
-    SELECT ?sourceId ?sourceLabel
+    SELECT ?ID ?CODE
     WHERE {
       : xkos:madeOf ?Association.
       ?Association xkos:targetConcept ?Target.
       ?Target dc:identifier ?targetId.
       FILTER(?targetId= "${conceptId}")
       ?Association xkos:sourceConcept ?Source.
-      ?Source dc:identifier ?sourceId;
-              skos:notation ?sourceLabel.
+      ?Source dc:identifier ?ID;
+              skos:notation ?CODE.
     }
 `
 }
@@ -139,12 +139,12 @@ export function queryBuilder(callerId, family, uri, year, conceptId, directFamil
     return res;
 	} else if (callerId === "pastConcepts") {
     const res = backwardQuery(uri, conceptId);
-    // console.log(res);
+    console.log(res);
     // console.trace();
     return res;
 	} else if (callerId === "futureConcepts") {
     const res = forwardQuery(uri, directFamily);
-    // console.log(res);
+    console.log(res);
     return res;
   }
 }
