@@ -51,35 +51,45 @@ async function renderBothWaysLineageData(iYear, conceptId, conceptLabel, directF
   if (pastYear) {
     const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === pastYear);
     if (pastTargetItem) {
-      await renderBackwardGraphData(pastTargetItem.correspUri, conceptId, iYear, pastYear, directFamily);
+      await renderBackwardLineageData(pastTargetItem.correspUri, conceptId, iYear, pastYear, directFamily);
     }
   }
 }
 
 async function renderForwardLineageData(correspondenceUri, conceptId, conceptLabel, iYear, targetYear, directFamily = false) {
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
+  console.log("rhi Node key:", nodeKey, processedNodes);
   if (processedNodes.has(nodeKey)) return;
+  
+  processedNodes.add(nodeKey);
 
   const conceptRDFUri = `${correspondenceUri}_${conceptId}`;
+
   const newTargets = await requestQueue.add(() => fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear, directFamily));
   
   if (newTargets.length > 0) {
-    processedNodes.add(nodeKey);
     console.log("rhi New targets:", newTargets);
     await Promise.all(newTargets.map(target => processForwardLineage(parseInt(target.targetYear), target.targetId, target.targetLabel)));
   }
 }
 
-async function renderBackwardGraphData(correspondenceUri, conceptId, iYear, targetYear, lookForward = false) {
+async function renderBackwardLineageData(correspondenceUri, conceptId, iYear, targetYear, lookForward = false) {
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
   if (processedNodes.has(nodeKey)) return;
 
-  const newSources = await requestQueue.add(() => fetchAndProcessTargets(correspondenceUri, conceptId, '', iYear, targetYear));
+  const newTargets = await requestQueue.add(() => fetchAndProcessTargets(correspondenceUri, conceptId, '', iYear, targetYear));
 
-  if (newSources.length > 0) {
+  if (newTargets.length > 0) {
     processedNodes.add(nodeKey);
-    await Promise.all(newSources.map(source => renderBothWaysLineageData(parseInt(source.sourceYear), source.sourceId, source.sourceLabel)));
-    await Promise.all(newSources.map(source => processBackwardLineage(parseInt(source.sourceYear), source.sourceId)));
+    console.log(
+			"Look forward:",
+			lookForward,
+			nodeKey,
+			newTargets.map((target) => target.targetId),
+			newTargets.map((target) => target.targetYear)
+		);
+    if (lookForward) await Promise.all(newTargets.map(target => renderBothWaysLineageData(parseInt(target.targetYear), target.targetId, target.targetLabel, false)));
+    if (!lookForward) await Promise.all(newTargets.map(target => processBackwardLineage(parseInt(target.targetYear), target.targetId)));
   }
 }
 
@@ -101,33 +111,14 @@ async function processBackwardLineage(iYear, conceptId) {
 
   const { correspUri, pastYear } = pastTargetItem;
   if (pastYear) {
-    await renderBackwardGraphData(correspUri, conceptId, iYear, pastYear);
+    await renderBackwardLineageData(correspUri, conceptId, iYear, pastYear);
   }
 }
 
-export function processTargets(data, conceptId, conceptLabel, iYear, targetYear) {
-  const isBackward = iYear > targetYear;
+export function processTargets(data, conceptId, conceptLabel, iYear, targetYear, directFamily) {
   const bindings = data.results.bindings;
-  return isBackward
-    ? getBackwardTargets(bindings, targetYear)
-    : getForwardTargets(bindings, conceptId, conceptLabel, iYear, targetYear);
-}
-
-function getForwardTargets(bindings, conceptId, conceptLabel, iYear, targetYear) {
-  // console.log("rhi2 Forward targets:", bindings);
-  const result = setNodesAndEdges(bindings, conceptId, conceptLabel, iYear, targetYear, processedEdges);
-
+	const result = setNodesAndEdges( bindings, conceptId, conceptLabel, iYear, targetYear, processedEdges, directFamily);
   result.nodes.forEach(node => globalNodes.add(node));
   result.edges.forEach(edge => globalEdges.add(edge));
-
   return result.targetIds;
-}
-
-function getBackwardTargets(bindings, sourceYear) {
-  // console.log("rhi Backward targets:", bindings);
-  return bindings.map(record => ({
-    sourceId: record.sourceId.value,
-    sourceYear: sourceYear,
-    sourceLabel: record.sourceLabel.value,
-  }));
 }
