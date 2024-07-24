@@ -8,8 +8,12 @@ export function prepareAndStoreCorrespondenceData(formattedData) {
 	sessionStorage.setItem("correspondence-table", JSON.stringify(storageData));
 }
 
+let correspondenceTableCache = null;
+
 // Extracts the correspondence table from session storage
 export async function getCorrespondenceTable() {
-  return JSON.parse(sessionStorage.getItem("correspondence-table"));
+  if (correspondenceTableCache === null) {
+    correspondenceTableCache = JSON.parse(sessionStorage.getItem("correspondence-table"));
+  }
+  return correspondenceTableCache;
 }
-

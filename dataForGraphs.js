@@ -22,7 +22,6 @@ export async function composeGraphData(id, kin, iYear, conceptId, conceptLabel) 
   // Clear global sets
   clearGlobalData();
 
-
   // Render lineage data both forwards and backwards
   await renderBothWaysLineageData(iYear, conceptId, conceptLabel);
 
@@ -133,10 +132,9 @@ async function processBackwardLineage(iYear, conceptId) {
   const { pastYear } = pastTargetItem;
 
   if (pastYear) {
-  const correspondenceTableData = await getCorrespondenceTable();
-  const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === pastYear);
-  if (!pastTargetItem) return;
-  const { correspUri} = pastTargetItem;
+    const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === pastYear);
+    if (!pastTargetItem) return;
+    const { correspUri } = pastTargetItem;
     await renderBackwardLineageData(correspUri, conceptId, iYear, pastYear);
   }
 }
