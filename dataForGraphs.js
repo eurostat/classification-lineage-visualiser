@@ -87,7 +87,6 @@ async function processForwardLineage(iYear, conceptId, conceptLabel) {
 
 async function renderBackwardLineageData(correspondenceUri, conceptId, iYear, targetYear, lookForward = false) {
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
-  console.log(nodeKey, processedNodes)
   if (processedNodes.has(nodeKey)) return;
 
   processedNodes.add(nodeKey);
@@ -95,18 +94,6 @@ async function renderBackwardLineageData(correspondenceUri, conceptId, iYear, ta
   const newTargets = await requestQueue.add(() => fetchAndProcessTargets(correspondenceUri, conceptId, '', iYear, targetYear));
 
   if (newTargets.length > 0) {
-    console.log(
-			"Backward Look with forward:",
-			lookForward,
-			nodeKey,
-			newTargets.map((target) => target.targetId),
-      conceptId,
-			newTargets.map((target) => target.targetYear),
-      targetYear,
-      correspondenceUri,
-      iYear
-
-		);
     if (lookForward)
     await Promise.all(
 			newTargets.map((target) =>
@@ -120,14 +107,18 @@ await Promise.all(newTargets.map(target => processBackwardLineage(parseInt(targe
 }
 
 async function processBackwardLineage(iYear, conceptId) {
-  console.log("Process backward", iYear, conceptId)
     
   const correspondenceTableData = await getCorrespondenceTable();
   const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
   if (!pastTargetItem) return;
 
-  const { correspUri, pastYear } = pastTargetItem;
+  const { pastYear } = pastTargetItem;
+
   if (pastYear) {
+  const correspondenceTableData = await getCorrespondenceTable();
+  const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === pastYear);
+  if (!pastTargetItem) return;
+  const { correspUri} = pastTargetItem;
     await renderBackwardLineageData(correspUri, conceptId, iYear, pastYear);
   }
 }
