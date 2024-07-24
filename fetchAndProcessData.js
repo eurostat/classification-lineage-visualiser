@@ -9,10 +9,12 @@ export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLa
   const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
   const isBackward = iYear > targetYear;
 
+
   // Data to be sent as query parameters
   const callerId = isBackward ? "pastConcepts" : "futureConcepts";
-  const q = { query: queryBuilder( callerId, family, conceptRDFUri, '', conceptId, directFamily) };
+  const q = { query: queryBuilder( callerId, family, conceptRDFUri, '', conceptId) };
   const queryParams = toQueryParams(q);
+  if (iYear === 2022) console.log(q.query)
   
   return new Promise((resolve, reject) => {
     makeAjaxRequest(

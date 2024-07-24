@@ -23,7 +23,7 @@ export function addEdgeIfNew(edges, processedEdges, nodeKey1, nodeKey2) {
   }
 }
 
-export function setNodesAndEdges( bindings, conceptId, conceptLabel, iYear, targetYear, processedEdges, directFamily) {
+export function setNodesAndEdges( bindings, conceptId, conceptLabel, iYear, targetYear, processedEdges) {
 
   if (bindings.length === 0) {
     return { nodes: new Set(), edges: new Set(), targetIds: [] };
@@ -40,21 +40,11 @@ export function setNodesAndEdges( bindings, conceptId, conceptLabel, iYear, targ
 		({
 			ID: { value: targetId },
 			CODE: { value: targetLabel },
-			CLOSE_MATCH_FAMILY: { value: hasChildren } = 'false',
-			CLOSE_MATCH_ID: { value: childId } = {},
-			CLOSE_MATCH_CODE: { value: childLabel } = {},
 		}) => {
 			const targetNodeKey = `${targetId}-${targetYear}`;
 			createNodeAndAddToSet(targetNodeKey, targetLabel, targetYear, nodes);
 			addEdgeIfNew(edges, processedEdges, sourceNodeKey, targetNodeKey);
 			targetIds.push({ targetId, targetYear, targetLabel });
-
-			if (hasChildren === "true") {
-				const familyNodeKey = `${childId}-${iYear}`;
-				createNodeAndAddToSet(familyNodeKey, childLabel, iYear, nodes);
-				addEdgeIfNew(edges, processedEdges, familyNodeKey, targetNodeKey);
-			}
-
 		}
 	);
 

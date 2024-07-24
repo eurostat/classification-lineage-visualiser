@@ -73,37 +73,20 @@ ORDER BY DESC(?thisYear)
 }
 
 
-function forwardQuery(uri, directFamily){
+function forwardQuery(uri){
   return `
     PREFIX : <${uri}>
     PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
     PREFIX dc: <http://purl.org/dc/elements/1.1/>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-    PREFIX owl: <http://www.w3.org/2002/07/owl#>
 
-    SELECT ?CODE ?ID ?LABEL ?CLOSE_MATCH_ID ?CLOSE_MATCH_VERSION ?CLOSE_MATCH_CODE ?CLOSE_MATCH_FAMILY
+    SELECT  ?ID ?CODE
     WHERE {
-      # Define the target concept
       : xkos:targetConcept ?targetConcept .
-      
-      # Retrieve the code, identifier, and label of the target concept
       ?targetConcept skos:notation ?CODE;
-                    dc:identifier ?ID;
-                    skos:altLabel ?LABEL .
-                    
-      # Filter to ensure CODE is a string and LABEL is in English
-      FILTER (DATATYPE(?CODE) = xsd:string && LANG(?LABEL) = "en")
-      
-      # Optionally retrieve the close match identifier if available and its code and version
-      OPTIONAL { 
-        ?targetConcept skos:closeMatch ?CLOSE_MATCH .
-        ?CLOSE_MATCH dc:identifier ?CLOSE_MATCH_ID ;
-                    owl:versionInfo ?CLOSE_MATCH_VERSION ;
-                    skos:notation ?CLOSE_MATCH_CODE .
-        FILTER (DATATYPE(?CLOSE_MATCH_CODE) = xsd:string)
-      }
-      BIND("${directFamily}" AS ?CLOSE_MATCH_FAMILY)
+                    dc:identifier ?ID.
+      FILTER (DATATYPE(?CODE) = xsd:string)
     }
 `
 }
@@ -128,7 +111,7 @@ function backwardQuery(uri, conceptId) {
 `
 }
 
-export function queryBuilder(callerId, family, uri, year, conceptId, directFamily) {
+export function queryBuilder(callerId, family, uri, year, conceptId) {
 	if (callerId === "versions") {
 		const res = queryForConceptId(family, uri, year);
     // console.log(res);
@@ -139,12 +122,12 @@ export function queryBuilder(callerId, family, uri, year, conceptId, directFamil
     return res;
 	} else if (callerId === "pastConcepts") {
     const res = backwardQuery(uri, conceptId);
-    console.log(res);
+    // console.log(res);
     // console.trace();
     return res;
 	} else if (callerId === "futureConcepts") {
-    const res = forwardQuery(uri, directFamily);
-    console.log(res);
+    const res = forwardQuery(uri);
+    // console.log(res);
     return res;
   }
 }
