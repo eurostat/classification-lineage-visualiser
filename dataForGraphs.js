@@ -77,10 +77,11 @@ async function renderBackwardLineageData(correspondenceUri, conceptId, iYear, ta
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
   if (processedNodes.has(nodeKey)) return;
 
+  processedNodes.add(nodeKey);
+
   const newTargets = await requestQueue.add(() => fetchAndProcessTargets(correspondenceUri, conceptId, '', iYear, targetYear));
 
   if (newTargets.length > 0) {
-    processedNodes.add(nodeKey);
     console.log(
 			"Look forward:",
 			lookForward,
