@@ -3,7 +3,7 @@ import { queryBuilder } from "./queryBuilder.js";
 import { makeAjaxRequest } from "./ajaxHelper.js";
 import { family, processTargets } from "./dataForGraphs.js";
 
-export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear, directFamily) {
+export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear) {
   $("#spinner").show();
   const corsAnywhereUrl = "https://cors-anywhere.herokuapp.com/";
   const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
@@ -26,7 +26,7 @@ export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLa
       {}, // No data in the body for GET request
       function (data) {
         try {
-          const newTargets = processTargets(data, conceptId, conceptLabel, iYear, targetYear, directFamily); 
+          const newTargets = processTargets(data, conceptId, conceptLabel, iYear, targetYear); 
           resolve(newTargets); // Resolve promise with new targets
         } catch (e) {
           console.error("Failed to process response data:", e, "Response data:", data, 

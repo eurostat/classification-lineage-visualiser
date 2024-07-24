@@ -22,8 +22,9 @@ export async function composeGraphData(id, kin, iYear, conceptId, conceptLabel) 
   // Clear global sets
   clearGlobalData();
 
+
   // Render lineage data both forwards and backwards
-  await renderBothWaysLineageData(iYear, conceptId, conceptLabel, true);
+  await renderBothWaysLineageData(iYear, conceptId, conceptLabel);
 
   // If no nodes were added, return a single node with no edges
   if (globalNodes.size === 0) {
@@ -52,7 +53,7 @@ function clearGlobalData() {
 }
 
 // Function to render both forward and backward lineage data
-async function renderBothWaysLineageData(iYear, conceptId, conceptLabel, directFamily = false) {
+async function renderBothWaysLineageData(iYear, conceptId, conceptLabel) {
   const correspondenceTableData = await getCorrespondenceTable();
   const targetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
   if (!targetItem) return;
@@ -61,27 +62,27 @@ async function renderBothWaysLineageData(iYear, conceptId, conceptLabel, directF
 
   // Render forward lineage data if available
   if (forwardYear) {
-    await renderForwardLineageData(correspUri, conceptId, conceptLabel, iYear, forwardYear, directFamily);
+    await renderForwardLineageData(correspUri, conceptId, conceptLabel, iYear, forwardYear);
   }
 
   // Render backward lineage data if available
   if (pastYear) {
     const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === pastYear);
     if (pastTargetItem) {
-      await renderBackwardLineageData(pastTargetItem.correspUri, conceptId, iYear, pastYear, directFamily);
+      await renderBackwardLineageData(pastTargetItem.correspUri, conceptId, iYear, pastYear, true);
     }
   }
 }
 
 // Function to render forward lineage data
-async function renderForwardLineageData(correspondenceUri, conceptId, conceptLabel, iYear, targetYear, directFamily = false) {
+async function renderForwardLineageData(correspondenceUri, conceptId, conceptLabel, iYear, targetYear) {
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
   if (processedNodes.has(nodeKey)) return;
 
   processedNodes.add(nodeKey);
 
   const conceptRDFUri = `${correspondenceUri}_${conceptId}`;
-  const newTargets = await requestQueue.add(() => fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear, directFamily));
+  const newTargets = await requestQueue.add(() => fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear));
 
   // Process each new target recursively
   if (newTargets.length > 0) {
