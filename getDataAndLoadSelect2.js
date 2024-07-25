@@ -10,8 +10,6 @@ import { endpointURL } from './globals.js';
 createDevDropdown();
 
 export function getDataAndLoadSelect2( callerId, family, correspondenceUri, version) {
-  $("#spinner").show();
-
 	if (callerId === "families") {
     const query = queryBuilder(callerId, family);
 		getVersion(callerId, query, endpointURL);
@@ -22,7 +20,7 @@ export function getDataAndLoadSelect2( callerId, family, correspondenceUri, vers
 }
 
 async function getVersion(callerId, query, sparqlEndpoint) {
-  $("#spinner").show(); // Ensure spinner is shown at the start
+  $("#spinner").show(); 
   try {
 	const futureResponse = await new Promise((resolve, reject) => {
 	  makeAjaxRequest(
@@ -32,7 +30,7 @@ async function getVersion(callerId, query, sparqlEndpoint) {
 		null,
 		(response) => resolve(response), 
 		(error) => reject(error), 
-		"future"
+		"getVersion function call from " + callerId
 	  );
 	});
 
@@ -51,6 +49,7 @@ async function getVersion(callerId, query, sparqlEndpoint) {
 }
 
 export function getConceptIDs(callerId, query, endpointURL) {
+  $("#spinner").show();
   makeAjaxRequest(
     `${endpointURL}?query=${encodeURIComponent(query)}`,
     'GET',
@@ -67,7 +66,7 @@ export function getConceptIDs(callerId, query, endpointURL) {
       console.error('Error executing query:', errorThrown);
       $('#spinner').hide();
     },
-    callerId
+		"getConceptIDs function call from " + callerId
   
   );
 }

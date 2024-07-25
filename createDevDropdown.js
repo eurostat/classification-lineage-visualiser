@@ -82,15 +82,15 @@ function _createDevDropdown() {
       $("#errorContainer").empty();
   
       const conceptId = e.params.data.data.id;
-      const category = /^\d{8}$/.test(conceptId) ? "prodcom" : "cn";
-      getDataAndLoadSelect2("families", category);
+      const family = /^\d{8}$/.test(conceptId) ? "prodcom" : "cn";
+      getDataAndLoadSelect2("families", family);
   
       // Wait for getDataAndLoadSelect2 to finish, then wait an additional second
       await new Promise(resolve => setTimeout(resolve, 1000));
   
       const conceptLabel = e.params.data.data.code;
       const year = e.params.data.data.year;
-      const graphData = await composeGraphData("concepts", category, (+year), conceptId, conceptLabel);
+      const graphData = await composeGraphData("concepts", family, (+year), conceptId, conceptLabel);
       renderChart(graphData);
   });
 }
