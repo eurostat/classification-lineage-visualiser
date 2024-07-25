@@ -1,36 +1,46 @@
 ## Classification Lineage Visualiser Prototype
-A front-end application to visualize the lineage of classification items over time. This prototype is built using HTML, CSS, and JavaScript. The user select form is populated with data from an RDF database using SPARQL queries. The application allows users to select a concept and view its evolution over different years.
 
-## Features
-### Dynamic Search with Typeahead
-- The prototype implements a multi-stage selection process using cascading dropdown menus. Selecting an option in the "family" dropdown dynamically populates the "version" and "concept" dropdowns with real-time filtering based on user-defined criteria.
-- The "concept" dropdown displays both the code and label for each concept.
-- This ensures that the user always selects a valid concept.
-### Retrieve Data Over the Years
-- The application begins by displaying the selected concept for a specific year. It then retrieves target classifications (or data) from the correspondence tables. Finally, it iterates through the available targets, querying data for each year to visualize the evolution of the concept over time.
+This front-end application, built using HTML and JavaScript, allows users to explore the evolution of classification items over time. Users can select a concept from a dropdown menu and the application then displays the concept's lineage across different years.
+
+### Key Features
+
+* **Dynamic Search with Typeahead:**
+    * The application employs a multi-stage selection process with cascading dropdowns. Selecting an option in one dropdown dynamically filters and populates subsequent dropdowns based on user selections.
+    * The "concept" dropdown displays both concept code and label, ensuring users choose valid concepts.
+
+* **Visualising Lineage Over Time:**
+    * Upon selecting a concept and year, the application retrieves relevant data from correspondence tables, then iterates through available years, querying data for each year to visualise the concept's evolution.
 
 
-## Recent Development Overview
+### Achievements
 
-**Classification Lineage Visualizer Prototype:**
+* **Core Functionality:** Successfully implemented the core feature of visualising concept changes over time.
+* **Concept Selection:** Implemented a user-friendly dropdown menu for selecting concept codes.
+* **Data Retrieval:** Optimised SPARQL queries for efficient data retrieval.
+* **Lineage Rendering:** Enhanced logic for clear and accurate display of lineage relationships.
+* **Concept Dropdown Population:** Improved the process of populating the dropdown menu with relevant concept codes.
 
-* I've finalized the design of the initial prototype for the classification lineage visualizer. This includes functionality to:
-    * Visualize concept changes over time.
-    * Select concept code using a dropdown menu.
 
-**SPARQL Query Development:**
+### Latest Developments In This Version
 
-* I'm currently developing SPARQL queries to retrieve data for the visualizer. This involves creating:
-    * Dropdowns populated with a version (year).
-    * Dropdowns populated with a concepts list.
-    * Tracking mechanisms for concept changes and continuity.
+* **Concept ID Dropdown:** The current implementation displays codes at level 3 depth (PRODCOM) and level 5 depth (CN). Refinements based on user feedback may be necessary.
+* **Data Retrieval:** A new logic for retrieving backward-looking data is being evaluated for performance and accuracy.
+* **Code Optimisation:** Code cleaning and optimisation are ongoing to improve efficiency and maintainability.
 
-**Progress on Specific Tasks:**
+### Project Success
 
-* Cascading dropdowns with a typeahead for concept selection are complete and functional. 
-* Data retrieval from the RDF database used in dropdowns is operational.
-* The application is now able to query data for different years to show the evolution of concepts.
+The Classification Lineage Visualiser prototype has successfully achieved its goals. The project aimed to create a visual representation of concept changes over time. This involved implementing a user interface with cascading dropdowns for concept selection, fetching data using SPARQL queries, and developing logic for lineage rendering and dropdown population.
 
-**Development Environment Setup:**
+### Development Environment
+**CORS proxy:**
 
-* The development environment is configured, including a proxy to address CORS errors.
+* A development environment has been configured, including a proxy to address CORS errors. Please refer to the [cors anywhere demo](https://cors-anywhere.herokuapp.com/corsdemo) for proxy usage.
+* This is a demo server and not intended for production use. Limiting 50 queries per 60 minutes.
+
+**Cache Management:**
+This application caches data to improve performance. User needs to clear the cache manually to fetch the latest data and avoid memory issues. Memory usages is average and wont cause any issues in short term. Please see developer tools for memory usage : `F12` -> `Application` -> `Storage` -> `Clear site data`
+
+#### Main Files
+
+* **queryBuilder.js**: Contains functions to build SPARQL queries for data retrieval.
+* **dataForGraphs.js**: Contains the main data retrieval logic and functions to produce data for graphs.
