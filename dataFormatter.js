@@ -20,6 +20,7 @@ function formatDataVersions(data) {
       text: item.thisNotation.value,
       data: {
         correspUri: item.correspondenceUri?.value ?? "",
+        conceptSchemeUri: item.conceptSchemeUri?.value ?? "",
         nextYear: item.nextYear?.value ?? "",
         pastYear: item.pastYear?.value ?? "",
       },

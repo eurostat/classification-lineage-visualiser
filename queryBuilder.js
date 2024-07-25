@@ -38,27 +38,27 @@ PREFIX xkos: <http://rdf-vocabulary.ddialliance.org/xkos#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT DISTINCT ?thisNotation ?thisYear ?pastYear ?nextYear ?correspondenceUri
+SELECT DISTINCT ?thisNotation ?thisYear ?pastYear ?nextYear ?correspondenceUri ?conceptSchemeUri
 WHERE { 
-  ?currentURI a skos:ConceptScheme ;
+  ?conceptSchemeUri a skos:ConceptScheme ;
               skos:notation ?thisNotation ;
               xkos:belongsTo ?classSeries ;
               owl:versionInfo ?thisYear .
 
   OPTIONAL { 
-    ?currentURI xkos:follows ?previousURI .
+    ?conceptSchemeUri xkos:follows ?previousURI .
     ?previousURI owl:versionInfo ?pastYear .
   }
 
   OPTIONAL { 
-    ?nextURI xkos:follows ?currentURI .
+    ?nextURI xkos:follows ?conceptSchemeUri .
     ?nextURI owl:versionInfo ?nextYear .
 
     OPTIONAL {
-      ?correspondenceUri xkos:compares ?currentURI, ?nextURI ;
+      ?correspondenceUri xkos:compares ?conceptSchemeUri, ?nextURI ;
                   xkos:madeOf ?association .
       ?association xkos:sourceConcept ?concept .
-      ?concept skos:inScheme ?currentURI .
+      ?concept skos:inScheme ?conceptSchemeUri .
     }
   }
 
