@@ -1,7 +1,8 @@
 import { toQueryParams } from "./uriHelper.js";
 import { queryBuilder } from "./queryBuilder.js";
 import { makeAjaxRequest } from "./ajaxHelper.js";
-import { family, processTargets } from "./dataForGraphs.js";
+import { family } from "./globals.js";
+import { processTargets } from "./nodesAndEdges.js";
 
 export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear) {
   $("#spinner").show();
@@ -14,6 +15,11 @@ export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLa
   const callerId = isBackward ? "pastConcepts" : "futureConcepts";
   const q = { query: queryBuilder( callerId, family, conceptRDFUri, '', conceptId) };
   const queryParams = toQueryParams(q);
+
+  if (conceptId === "846229000080") {
+    // console.log("fetchAndProcessTargets", conceptRDFUri, conceptId, conceptLabel, iYear, targetYear);
+    // console.log(q.query);
+  }
   
   return new Promise((resolve, reject) => {
     makeAjaxRequest(
