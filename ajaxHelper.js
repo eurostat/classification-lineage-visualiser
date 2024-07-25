@@ -46,6 +46,10 @@ export async function makeAjaxRequest(url, method, headers, data, onSuccess, onE
     });
   }
 }
+
+/**
+ * Class to manage and limit the number of concurrent asynchronous requests (promises) that are executed at the same time. 
+ */
 export class RequestQueue {
   constructor(maxConcurrent) {
     this.queue = [];
