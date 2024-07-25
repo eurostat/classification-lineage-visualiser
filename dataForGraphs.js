@@ -61,7 +61,7 @@ async function renderBothWaysLineageData(iYear, conceptId, conceptLabel) {
 
   // Render forward lineage data if available
   if (forwardYear) {
-    await renderForwardLineageData(correspUri, conceptId, conceptLabel, iYear, forwardYear);
+    await renderForwardLineageData(correspUri, conceptId, conceptLabel, iYear, forwardYear, true);
   }
 
   // Render backward lineage data if available
@@ -74,8 +74,9 @@ async function renderBothWaysLineageData(iYear, conceptId, conceptLabel) {
 }
 
 // Function to render forward lineage data
-async function renderForwardLineageData(correspondenceUri, conceptId, conceptLabel, iYear, targetYear) {
+async function renderForwardLineageData(correspondenceUri, conceptId, conceptLabel, iYear, targetYear, lookBackwards = false) {
   const nodeKey = `${conceptId}-${iYear}-${targetYear}`;
+  console.log('1 deKey', nodeKey, conceptLabel, lookBackwards);
   if (processedNodes.has(nodeKey)) return;
 
   processedNodes.add(nodeKey);
@@ -83,9 +84,31 @@ async function renderForwardLineageData(correspondenceUri, conceptId, conceptLab
   const conceptRDFUri = `${correspondenceUri}_${conceptId}`;
   const newTargets = await requestQueue.add(() => fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear));
 
+  console.log('newTargets', newTargets);
+
   // Process each new target recursively
   if (newTargets.length > 0) {
-    await Promise.all(newTargets.map(target => processForwardLineage(parseInt(target.targetYear), target.targetId, target.targetLabel)));
+    if (lookBackwards) {
+
+      const correspondenceTableData = await getCorrespondenceTable();
+			const targetItem = correspondenceTableData.find( (item) => parseInt(item.thisYear) === iYear);
+			if (targetItem) {
+			// newTargets.map((target) =>
+        console.log('2 deKey', targetItem, iYear, targetYear); 
+        console.log('3 deKey', newTargets);
+    await Promise.all(
+			newTargets.map((target) =>
+				renderBackwardLineageData( targetItem.correspUri, target.targetId, iYear, targetYear)
+			)
+		);
+			}
+		}
+
+    await Promise.all(
+			newTargets.map((target) =>
+				processForwardLineage( parseInt(target.targetYear), target.targetId, target.targetLabel)
+			)
+		);
   }
 }
 
@@ -112,6 +135,7 @@ async function renderBackwardLineageData(correspondenceUri, conceptId, iYear, ta
 
   // Process each new target recursively
   if (newTargets.length > 0) {
+    // forward looking is needed for the direct parent in order to find all children
     if (lookForward) {
       await Promise.all(newTargets.map(target =>
         requestQueue.add(() =>
