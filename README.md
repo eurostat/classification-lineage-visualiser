@@ -33,7 +33,6 @@ The Classification Lineage Visualiser prototype has successfully achieved its go
 
 ### Development Environment
 **CORS proxy:**
-
 * A development environment has been configured, including a proxy to address CORS errors. Please refer to the [cors anywhere demo](https://cors-anywhere.herokuapp.com/corsdemo) for proxy usage.
 * This is a demo server and not intended for production use. Limiting 50 queries per 60 minutes.
 
@@ -44,3 +43,12 @@ This application caches data to improve performance. User needs to clear the cac
 
 * **queryBuilder.js**: Contains functions to build SPARQL queries for data retrieval.
 * **dataForGraphs.js**: Contains the main data retrieval logic and functions to produce data for graphs.
+
+### Future Enhancements
+* **Improved data** - we are simulating some data because of the lack of real data. We will replace this with real data in the future. Simulation takes place in **sessionStorage.js** file, and shouldn't have any impact even if we replace it with real data.
+
+### Browser Compatibility
+Tested with Microsoft Edge
+
+### Contributors
+GRAMAGLIA Luca, HIRMO Reigo
