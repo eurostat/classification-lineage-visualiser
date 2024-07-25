@@ -3,11 +3,10 @@ import { queryBuilder } from "./queryBuilder.js";
 import { makeAjaxRequest } from "./ajaxHelper.js";
 import { family } from "./globals.js";
 import { processTargets } from "./nodesAndEdges.js";
+import { endpointURL } from "./globals.js";
 
 export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLabel, iYear, targetYear) {
   $("#spinner").show();
-  const corsAnywhereUrl = "https://cors-anywhere.herokuapp.com/";
-  const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
   const isBackward = iYear > targetYear;
 
 
@@ -18,7 +17,7 @@ export async function fetchAndProcessTargets(conceptRDFUri, conceptId, conceptLa
   
   return new Promise((resolve, reject) => {
     makeAjaxRequest(
-      `${corsAnywhereUrl}${sparqlEndpoint}?${queryParams}`, // Include query parameters in the URL
+      `${endpointURL}?${queryParams}`, // Include query parameters in the URL
       "GET", // Change to GET method
       {
         Accept: "application/sparql-results+json",

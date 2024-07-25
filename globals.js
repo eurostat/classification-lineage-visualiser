@@ -14,6 +14,10 @@ export function resetGlobalData(id, kin) {
   processedNodes.clear();
   processedEdges.clear();
 }
+
 export let callerId = "";
 export let family = "";
 
+export const proxy = "https://cors-anywhere.herokuapp.com/";
+export const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
+export const endpointURL = `${proxy}${sparqlEndpoint}`;

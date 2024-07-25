@@ -5,14 +5,11 @@ import { formatData } from './dataFormatter.js';
 import { initializeSelect2 } from './select2Helper.js';
 import { createDevDropdown } from './createDevDropdown.js';
 import { prepareAndStoreCorrespondenceData } from './sessionStorage.js';
+import { endpointURL } from './globals.js';
 
 createDevDropdown();
 
 export function getDataAndLoadSelect2( callerId, family, correspondenceUri, version) {
-	const proxy = "https://cors-anywhere.herokuapp.com/";
-	const sparqlEndpoint = "http://publications.europa.eu/webapi/rdf/sparql";
-	const endpointURL = `${proxy}${sparqlEndpoint}`;
-  
   $("#spinner").show();
 
 	if (callerId === "families") {
@@ -21,7 +18,6 @@ export function getDataAndLoadSelect2( callerId, family, correspondenceUri, vers
 	} else if (callerId === "versions") {
 		const query = queryBuilder(callerId, family, correspondenceUri, version);
 		getConceptIDs(callerId, query, endpointURL);
-
 	}
 }
 
