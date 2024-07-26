@@ -31,11 +31,10 @@ export async function composeGraphData(callerId, family, iYear, conceptId, conce
 
 // Function to render both forward and backward lineage data
 async function renderBothWaysLineageData(iYear, conceptId, conceptLabel) {
-  const correspondenceTableData = await getCorrespondenceTable();
-  const targetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
-  if (!targetItem) return;
+  const correspondenceEntry = await getCorrespondenceEntry(iYear);
+  if (!correspondenceEntry) return;
 
-  const { nextYear: forwardYear, correspUri, pastYear } = targetItem;
+  const { nextYear: forwardYear, correspUri, pastYear } = correspondenceEntry;
 
   // Render forward lineage data if available
   if (forwardYear) {
@@ -44,9 +43,9 @@ async function renderBothWaysLineageData(iYear, conceptId, conceptLabel) {
 
   // Render backward lineage data if available
   if (pastYear) {
-    const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === pastYear);
-    if (pastTargetItem) {
-      await renderBackwardLineageData(pastTargetItem.correspUri, conceptId, iYear, pastYear, true);
+    const pastCorrespondenceEntry = await getCorrespondenceEntry(pastYear);
+    if (pastCorrespondenceEntry) {
+      await renderBackwardLineageData(pastCorrespondenceEntry.correspUri, conceptId, iYear, pastYear, true);
     }
   }
 }
@@ -65,12 +64,11 @@ async function renderForwardLineageData(correspondenceUri, conceptId, conceptLab
   if (newTargets.length > 0) {
     if (lookBackwards) {
 
-      const correspondenceTableData = await getCorrespondenceTable();
-			const targetItem = correspondenceTableData.find( (item) => parseInt(item.thisYear) === iYear);
-			if (targetItem) {
+      const correspondenceEntry = await getCorrespondenceEntry(iYear);
+			if (correspondenceEntry) {
         await Promise.all(
           newTargets.map((target) =>
-            renderBackwardLineageData( targetItem.correspUri, target.targetId, targetYear, iYear, false, true)
+            renderBackwardLineageData( correspondenceEntry.correspUri, target.targetId, targetYear, iYear, false, true)
           )
         );
 			}
@@ -85,11 +83,10 @@ async function renderForwardLineageData(correspondenceUri, conceptId, conceptLab
 
 // Helper function to process forward lineage data recursively
 async function processForwardLineage(iYear, conceptId, conceptLabel) {
-  const correspondenceTableData = await getCorrespondenceTable();
-  const targetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
-  if (!targetItem) return;
+  const correspondenceEntry = await getCorrespondenceEntry(iYear);
+  if (!correspondenceEntry) return;
 
-  const { nextYear: forwardYear, correspUri } = targetItem;
+  const { nextYear: forwardYear, correspUri } = correspondenceEntry;
   if (forwardYear) {
     await renderForwardLineageData(correspUri, conceptId, conceptLabel, iYear, forwardYear);
   }
@@ -114,24 +111,28 @@ async function renderBackwardLineageData(correspondenceUri, conceptId, iYear, ta
         )
       ));
     }
+    // direct child flag is needed to stop backward recursion after the first level
     if (directChild) return;
+    // process the next level of backward lineage
     await Promise.all(newTargets.map(target => processBackwardLineage(parseInt(target.targetYear), target.targetId)));
   }
 }
 
 // Helper function to process backward lineage data recursively
 async function processBackwardLineage(iYear, conceptId) {
+  const correspondenceEntry = await getCorrespondenceEntry(iYear);
+  if (!correspondenceEntry || !correspondenceEntry.pastYear) return;
+
+  const { pastYear } = correspondenceEntry;
+  const nextCorrespondenceEntry = await getCorrespondenceEntry(pastYear);
+  if (!nextCorrespondenceEntry || !nextCorrespondenceEntry.correspUri) return;
+
+  const { correspUri } = nextCorrespondenceEntry;
+  await renderBackwardLineageData(correspUri, conceptId, iYear, pastYear);
+}
+
+async function getCorrespondenceEntry(year) {
   const correspondenceTableData = await getCorrespondenceTable();
-  const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === iYear);
-  if (!pastTargetItem) return;
-
-  const { pastYear } = pastTargetItem;
-
-  if (pastYear) {
-    const pastTargetItem = correspondenceTableData.find(item => parseInt(item.thisYear) === pastYear);
-    if (!pastTargetItem) return;
-    const { correspUri } = pastTargetItem;
-    await renderBackwardLineageData(correspUri, conceptId, iYear, pastYear);
-  }
+  return correspondenceTableData.find(item => parseInt(item.thisYear) === year);
 }
 
